@@ -1,19 +1,29 @@
-from django.test import TestCase, Client
-from django.urls import reverse
+import random
+import string
+
 from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from .urls import app_name
 
 
 class RegistrationTestCase(TestCase):
     def setUp(self):
         self.client = Client()
-        self.signup_url = reverse("/next-word/signup")
-        self.login_url = reverse("/next-word/login")
-        self.logout_url = reverse("/next-word/logout")
+        self.signup_url = reverse(f"{app_name}:signup")
+        self.login_url = reverse(f"{app_name}:login")
+        self.logout_url = reverse(f"{app_name}:logout")
 
         self.user_data = {
-            "username": "testuser",
+            "username": "testusername-".join(
+                [
+                    string.ascii_letters[random.randrange(0, len(string.ascii_letters))]
+                    for _ in range(5)
+                ]
+            ),
             "email": "testemail@test.ir",
-            "password": "Pass123456@",
+            "password": "TestPass123456@",
             "name": "testname",
             "age": "20",
         }
@@ -31,7 +41,10 @@ class RegistrationTestCase(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        follow_response = self.client.get(response.url)
+
+        self.assertEqual(follow_response.status_code, 200)
         self.assertTrue(
             User.objects.filter(username=self.user_data["username"]).exists()
         )
@@ -49,7 +62,10 @@ class RegistrationTestCase(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        follow_response = self.client.get(response.url)
+
+        self.assertEqual(follow_response.status_code, 200)
         self.assertIn("_auth_user_id", self.client.session)
 
     def test_logout_endpoint(self):
@@ -62,5 +78,8 @@ class RegistrationTestCase(TestCase):
 
         response = self.client.get(self.logout_url)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        follow_response = self.client.get(response.url)
+
+        self.assertEqual(follow_response.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
