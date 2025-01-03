@@ -1,4 +1,5 @@
 import React from "react";
+import LinkLabel from "@/components/LinkLabel";
 
 const SignupPage: React.FC = () => {
     return (
@@ -79,12 +80,7 @@ const SignupPage: React.FC = () => {
                     Signup
                 </button>
             </form>
-            <p className="text-center text-gray-600 mt-6">
-                Do not want to signup?{" "}
-                <a href="/" className="text-blue-500 hover:underline">
-                    Home
-                </a>
-            </p>
+            <LinkLabel text="Do not want to signup?" link="/" linkText="Home"/>
         </div>
     );
 };

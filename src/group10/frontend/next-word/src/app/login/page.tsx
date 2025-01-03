@@ -1,4 +1,5 @@
 import React from "react";
+import LinkLabel from "@/components/LinkLabel";
 
 const LoginPage: React.FC = () => {
     return (
@@ -34,18 +35,8 @@ const LoginPage: React.FC = () => {
                     Login
                 </button>
             </form>
-            <p className="text-center text-gray-600 mt-6">
-                Not a Member?{" "}
-                <a href="/signup" className="text-blue-500 hover:underline">
-                    Signup
-                </a>
-            </p>
-            <p className="text-center text-gray-600 mt-6">
-            Want to go home?{" "}
-            <a href="/" className="text-blue-500 hover:underline">
-                Home
-            </a>
-        </p>
+            <LinkLabel text="Not a Member?" link="/signup" linkText="Signup"/>
+            <LinkLabel text="Want to go home?" link="/" linkText="Home"/>
         </div>
     );
 };
