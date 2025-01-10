@@ -9,5 +9,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ngram_model = NGramModel()
         ngram_model.generate_n_gram_model()
+        ngram_model.save_ngram_model()
         ngram_model.load_n_gram_model()
         self.stdout.write(self.style.SUCCESS('N-gram model generated and loaded'))
