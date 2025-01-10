@@ -2,7 +2,7 @@ from datasets import load_dataset
 from parsivar import Normalizer, Tokenizer, FindStems
 from tqdm import tqdm
 from collections import defaultdict
-from database_utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_URL
+from database_utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 from database_utils import create_db_connection
 
 normalizer = Normalizer()
