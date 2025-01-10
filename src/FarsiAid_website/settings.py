@@ -17,6 +17,8 @@ from .secret import (DB_NAME, DB_USER,
                      DB_HOST,
                      DB_PORT)
 import os
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
