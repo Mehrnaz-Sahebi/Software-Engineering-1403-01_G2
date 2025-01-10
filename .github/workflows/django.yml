@@ -1,4 +1,4 @@
-name: Django CI
+name: Group10 CI
 
 on:
   push:
