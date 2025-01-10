@@ -2,6 +2,8 @@ from datasets import load_dataset
 from parsivar import Normalizer, Tokenizer, FindStems
 from tqdm import tqdm
 from collections import defaultdict
+from database_utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_URL
+from database_utils import create_db_connection
 
 normalizer = Normalizer()
 normalizer_english = Normalizer(pinglish_conversion_needed=True)
@@ -51,33 +53,42 @@ def compute_probabilities(frequency_counter):
     
     return probabilities
 
-def save_to_database(probabilities, db_name="TBA"):
-    conn = "TBA"
-    cursor = conn.cursor()
-    
-    cursor.execute(
-        """
-            CREATE TABLE IF NOT EXISTS G10_word_probabilities (
-                past_word TEXT,
-                current_word TEXT,
-                probability REAL,
-                PRIMARY KEY (past_word, current_word)
-            )
-        """
-        )
+def save_to_database(probabilities):
+    mydb = create_db_connection(DB_HOST=DB_HOST, DB_PORT=DB_PORT, DB_USER=DB_USER, DB_PASSWORD=DB_PASSWORD, DB_NAME=DB_NAME)
+    cursor = mydb.cursor()
+    try:
+        cursor.execute("""
+                            CREATE TABLE IF NOT EXISTS G10_word_probabilities (
+                                past_word TEXT,
+                                current_word TEXT,
+                                probability REAL,
+                                PRIMARY KEY (past_word, current_word)
+                            )
+                        """
+                       )
+        mydb.commit()
+        print("Table created successfully")
+    except Exception as e:
+        print(f"The error '{e}' occurred")
+    finally:
+        cursor.close()
     
     for (past_word, current_word), probability in probabilities.items():
-        cursor.execute(
-        """
-            INSERT OR REPLACE INTO G10_word_probabilities (past_word, current_word, probability)
-            VALUES (?, ?, ?)
-        """, (past_word, current_word, probability))
+        try:
+            cursor.execute("""
+                                INSERT OR REPLACE INTO G10_word_probabilities (past_word, current_word, probability)
+                                VALUES (?, ?, ?)
+                            """, (past_word, current_word, probability))
+        except Exception as e:
+            print(f"The error '{e}' occurred")
+        finally:
+            cursor.close()
     
-    conn.commit()
-    conn.close()
-
+    print("Add probabilities successfully")
+    mydb.commit()
+    mydb.close()
 
 dataset = load_dataset("codersan/Persian-Wikipedia-Corpus")
 create_dataset(dataset)
 probabilities = compute_probabilities(frequency_counter)
-save_to_database(probabilities, )
+save_to_database(probabilities)
