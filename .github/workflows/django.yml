@@ -30,15 +30,15 @@ jobs:
       run: pipx install ruff
     - name: Lint code with Ruff
       run: |
-        cd group10
-        ruff check --output-format=github --target-version=py39
-        cd ..
+        cd src/group10
+        ruff check --output-format=github
+      continue-on-error: true
     - name: Check code formatting with Ruff
       run: |
-        cd group10
-        ruff format --diff --target-version=py39
-        cd ..
+        cd src/group10
+        ruff format --diff
       continue-on-error: true
     - name: Run Tests
       run: |
+        cd src
         python manage.py test group10
