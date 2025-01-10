@@ -41,4 +41,4 @@ jobs:
     - name: Run Tests
       run: |
         cd src
-        python manage.py test group10
+        python manage.py test group10 --noinput
