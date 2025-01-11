@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="صفحه خانه گروه میکروسرویس">
+    <meta name="keywords" content="میکروسرویس, توسعه, گروه">
+    <meta name="author" content="Your Name">
     <title>صفحه خانه</title>
     <link rel="stylesheet" href="{% static 'base/home_style.css' %}">
 </head>
 <body>
+    <!-- Navigation Menu -->
+    <nav class="navbar">
+        <ul class="menu">
+            <li><a href="{% url 'group9:login' %}">ورود</a></li> 
+            <li><a href="{% url 'group9:signup' %}">ثبت‌نام</a></li>
+        </ul>
+    </nav>
+
     <div class="welcome-container">
-      <h1>خوش آمدید به گروه {{ group_number }}
+        <h1 tabindex="0">
+            خوش آمدید به گروه {{ group_number }}
+            <br>
             میکروسرویس خود را اینجا توسعه دهید
         </h1>
     </div>
