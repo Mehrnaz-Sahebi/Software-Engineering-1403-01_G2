@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="fa">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>صفحه خانه</title>
-    <link rel="stylesheet" href="{% static 'base/home_style.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'base/home_style.css' %}" />
+  </head>
+  <body>
     <div class="welcome-container">
-        <h1>خوش آمدید به گروه {{ group_number }}
-            میکروسرویس خود را اینجا توسعه دهید
-        </h1>
+      <h1>
+        خوش آمدید به گروه {{ group_number }} میکروسرویس خود را اینجا توسعه دهید
+      </h1>
+      <!-- دکمه هدایت به صفحه بهینه‌سازی -->
+      <a href="{% url 'group3:optimize_text' %}" class="optimize-button"
+        >بهینه‌سازی متن</a
+      >
     </div>
-</body>
+  </body>
 </html>

@@ -4,14 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحه خانه</title>
+    <title>صفحه خانه گروه 5</title>
     <link rel="stylesheet" href="{% static 'base/home_style.css' %}">
 </head>
 <body>
-    <div class="welcome-container">
-        <h1>خوش آمدید به گروه {{ group_number }}
-            میکروسرویس خود را اینجا توسعه دهید
-        </h1>
-    </div>
+    <main>
+        <section class="api-container">
+            <h2>API های موجود</h2>
+            <ul>
+                <li>
+                    <a class="api-link" href="{% url 'group5:suggest-word' %}">پیشنهاد کلمه</a>
+                    <p>ارائه یک رشته و پیشنهاد بهترین کلمه بعد از آن</p>
+                </li>
+                <li>
+                    <a class="api-link" href="{% url 'group5:add-ngram' %}">افزودن ngram</a>
+                    <p>اضافه کردن داده به مدل ngram</p>
+                </li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Optimized Result</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        line-height: 1.6;
+      }
+      .result-container {
+        padding: 10px;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+        font-size: 1.2rem;
+      }
+      a {
+        display: inline-block;
+        margin-top: 15px;
+        text-decoration: none;
+        color: #007bff;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Optimized Text</h1>
+    <div class="result-container">{{ optimized_text }}</div>
+    <a href="{% url 'group3:optimize_text' %}">Back to Optimization</a>
+  </body>
+</html>
