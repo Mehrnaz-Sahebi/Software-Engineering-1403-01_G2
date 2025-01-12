@@ -3,6 +3,7 @@ from tqdm import tqdm
 from collections import defaultdict
 from database_utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 from database_utils import create_db_connection
+from datasets import load_dataset
 import heapq
 
 normalizer = Normalizer()
@@ -16,10 +17,11 @@ def normalize(text):
 
 
 def findStem(tokens, need_stemming=False):
-    if need_stemming: 
+    if need_stemming:
         return [stemmer.convert_to_stem(token) for token in tokens]
     else:
         return tokens
+
 
 def tokenize(text):
     return tokenizer.tokenize_words(text)
@@ -101,7 +103,9 @@ def save_to_database(probabilities):
 
     batch_size = 100
     batch = []
-    for past_word, top_entries in tqdm(probabilities.items(), desc="Processing probabilities"):
+    for past_word, top_entries in tqdm(
+        probabilities.items(), desc="Processing probabilities"
+    ):
         for prob, current_word in top_entries:
             batch.append((past_word, current_word, prob))
             if len(batch) >= batch_size:
@@ -123,7 +127,6 @@ def save_to_database(probabilities):
     cursor.close()
     mydb.close()
 
-from datasets import load_dataset
 
 dataset = load_dataset("codersan/Persian-Wikipedia-Corpus")
 create_dataset(dataset)

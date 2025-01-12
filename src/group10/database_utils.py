@@ -21,5 +21,5 @@ def create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME):
         print("Connection to MySQL DB successful")
     except Exception as e:
         print(f"The error '{e}' occurred")
-        
+
     return mydb
