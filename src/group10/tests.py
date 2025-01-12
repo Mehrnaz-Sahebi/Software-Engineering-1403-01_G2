@@ -83,3 +83,31 @@ class RegistrationTestCase(TestCase):
 
         self.assertEqual(follow_response.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+class SuggestTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.suggest_url = reverse(f"{app_name}:suggest")
+
+        self.past_word = "سلام"
+        self.suggestions = [
+            ('و', 0.184397),
+            ('است', 0.156028),
+        ]
+
+    def test_suggest_endpoint_with_results(self):
+        response = self.client.get(self.suggest_url, {"past_word": self.past_word})
+        self.assertEqual(response.status_code, 200)
+        
+        for (current_word, probability) in self.suggestions:
+            self.assertContains(response, (current_word, probability))
+
+    def test_suggest_endpoint_no_results(self):
+        response = self.client.get(self.suggest_url, {"past_word": "اااااااا"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No suggestions available for")
+
+    def test_suggest_endpoint_no_input(self):
+        response = self.client.get(self.suggest_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Past word not provided")
