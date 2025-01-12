@@ -14,8 +14,38 @@ def home(request):
 
 
 def suggest(request):
-    return render(request, "group10.html", {"group_number": "10"})
+    past_word = request.GET.get("past_word")
+    if past_word:
+        mydb = create_db_connection(
+            DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+        )
+        cursor = mydb.cursor()
 
+        try:
+            cursor.execute(
+                """
+                SELECT current_word, probability
+                FROM G10_word_probabilities
+                WHERE past_word = %s
+                ORDER BY probability DESC
+                LIMIT 5;
+                """,
+                (past_word,),
+            )
+            suggestions = cursor.fetchall()
+
+        except Exception as e:
+            return HttpResponse("Error fetching suggestions")
+        finally:
+            cursor.close()
+            mydb.close()
+
+    return render(
+        request,
+        context={
+            "suggestions": suggestions,
+        },
+    )
 
 def SignupPage(request):
     if request.method == "POST":
