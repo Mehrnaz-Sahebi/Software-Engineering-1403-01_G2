@@ -1,4 +1,3 @@
-from datasets import load_dataset
 from parsivar import Normalizer, Tokenizer, FindStems
 from tqdm import tqdm
 from collections import defaultdict
@@ -42,7 +41,7 @@ def count_frequency(tokens):
 
 def create_dataset(dataset):
     dataset_size = len(dataset["train"])
-
+    dataset_size = 1
     for index in tqdm(range(dataset_size)):
         text = dataset["train"][index]["Text"]
         tokens = create_tokens_from_text(text)
@@ -73,38 +72,45 @@ def save_to_database(probabilities):
     cursor = mydb.cursor()
     try:
         cursor.execute("""
+                            DROP TABLE IF EXISTS G10_word_probabilities;
+                        """)
+        mydb.commit()
+        print("Table drop successfully")
+    except Exception as e:
+        print(f"The error '{e}' occurred")
+
+    try:
+        cursor.execute("""
                             CREATE TABLE IF NOT EXISTS G10_word_probabilities (
+                                id INT AUTO_INCREMENT PRIMARY KEY,         
                                 past_word TEXT,
                                 current_word TEXT,
-                                probability REAL,
-                                PRIMARY KEY (past_word, current_word)
+                                probability REAL
                             )
                         """)
         mydb.commit()
         print("Table created successfully")
     except Exception as e:
         print(f"The error '{e}' occurred")
-    finally:
-        cursor.close()
 
     for (past_word, current_word), probability in probabilities.items():
         try:
             cursor.execute(
                 """
-                                INSERT OR REPLACE INTO G10_word_probabilities (past_word, current_word, probability)
-                                VALUES (?, ?, ?)
+                                INSERT INTO G10_word_probabilities (past_word, current_word, probability)
+                                VALUES (%s, %s, %s)
                             """,
                 (past_word, current_word, probability),
             )
         except Exception as e:
             print(f"The error '{e}' occurred")
-        finally:
-            cursor.close()
 
     print("Add probabilities successfully")
     mydb.commit()
+    cursor.close()
     mydb.close()
 
+from datasets import load_dataset
 
 dataset = load_dataset("codersan/Persian-Wikipedia-Corpus")
 create_dataset(dataset)
