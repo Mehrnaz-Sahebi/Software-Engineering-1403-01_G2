@@ -10,3 +10,5 @@ mysql-connector-python
 mysqlclient
 pymysql
 hazm
+parsivar
+tqdm
