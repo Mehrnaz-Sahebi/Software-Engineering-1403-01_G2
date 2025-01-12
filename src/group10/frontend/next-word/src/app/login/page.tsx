@@ -16,8 +16,8 @@ const LoginPage: React.FC = () => {
                     Login
                 </button>
             </form>
-            <LinkLabel text="Not a Member?" link="/signup" linkText="Signup"/>
-            <LinkLabel text="Want to go home?" link="/" linkText="Home"/>
+            <LinkLabel text="Not a Member?" link="/group10/signup" linkText="Signup"/>
+            <LinkLabel text="Want to go home?" link="/group10/" linkText="Home"/>
         </div>
     );
 };

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup": "rm -rf out && next build && python ../modify_static_files.py -d out",
+    "deploy": "rm -rf ../../../static/_next && mv out/*.html ../../templates/ && mv out/* ../../../static/"
   },
   "dependencies": {
     "react": "^19.0.0",

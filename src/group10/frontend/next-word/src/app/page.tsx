@@ -6,7 +6,7 @@ export default function Home() {
       <div className="m-4 bg-white p-8 rounded-lg shadow-lg">
           <LinkLabel
               text="Welcome to Magical Next Word Suggestion Web!"
-              link="/login"
+              link="/group10/login"
               linkText="Login"
           />
       </div>

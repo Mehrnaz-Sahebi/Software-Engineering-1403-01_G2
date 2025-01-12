@@ -9,11 +9,11 @@ from database.secret import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 # Create your views here.
 
 
-def home(request):
-    return render(request, "group10.html", {"group_number": "10"})
+def HomePage(request):
+    return render(request, "index.html")
 
 
-def suggest(request):
+def Suggest(request):
     return render(request, "group10.html", {"group_number": "10"})
 
 
@@ -47,7 +47,7 @@ def SignupPage(request):
                     "An error occurred while creating your account. Please try again."
                 )
 
-    return render(request, "registration/signup.html")
+    return render(request, "signup.html")
 
 
 def LoginPage(request):
@@ -62,7 +62,7 @@ def LoginPage(request):
         else:
             return HttpResponse("Username or Password is incorrect!!!")
 
-    return render(request, "registration/login.html")
+    return render(request, "login.html")
 
 
 def LogoutPage(request):
