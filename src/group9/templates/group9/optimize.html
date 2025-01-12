@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimize Text</title>
+</head>
+<body>
+    <h1>Text Optimization Form</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="input">Input Text:</label><br>
+        <textarea id="input" name="input" rows="5" cols="40" required>{{ input_text|default:'' }}</textarea><br><br>
+
+        <label>
+            <input type="checkbox" name="correct_spacing"> Correct Spacing
+        </label><br>
+        <label>
+            <input type="checkbox" name="remove_diacrities"> Remove Diacritics
+        </label><br>
+        <label>
+            <input type="checkbox" name="remove_special_chars"> Remove Special Characters
+        </label><br>
+        <label>
+            <input type="checkbox" name="decrease_repeated_chars"> Decrease Repeated Characters
+        </label><br>
+        <label>
+            <input type="checkbox" name="persian_style"> Persian Style
+        </label><br>
+        <label>
+            <input type="checkbox" name="persian_number"> Persian Number
+        </label><br>
+        <label>
+            <input type="checkbox" name="unicodes_replacement"> Unicode Replacement
+        </label><br>
+        <label>
+            <input type="checkbox" name="seperate_mi"> Separate "می" and "نمی"
+        </label><br><br>
+
+        <button type="submit">Optimize Text</button>
+    </form>
+
+    {% if optimized_text %}
+    <h2>Optimized Text</h2>
+    <textarea rows="5" cols="40" readonly>{{ optimized_text }}</textarea>
+    {% endif %}
+</body>
+</html>
