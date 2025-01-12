@@ -44,7 +44,7 @@ def count_frequency(tokens):
 
 def create_dataset(dataset):
     dataset_size = len(dataset["train"])
-    dataset_size = 150000
+
     for index in tqdm(range(dataset_size), desc="Parsing document"):
         text = dataset["train"][index]["Text"]
         tokens = create_tokens_from_text(text)
