@@ -1,4 +1,5 @@
-from django.shortcuts import render
+import os
+
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import get_user_model
 from group9.database.secret import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
@@ -6,15 +7,13 @@ from group9.database.query import *
 from django.db import IntegrityError
 from django.contrib.auth import authenticate,login,logout
 
-# Create your views here.
-
 User = get_user_model()
 
 def home(request):
     return render (request , 'group9.html' , {'group_number': '9'})
 
 
-def SignupPage(request):
+def signup_page(request):
     if request.method == 'POST':
         uname = request.POST.get('username')
         email = request.POST.get('email')
@@ -44,7 +43,7 @@ def SignupPage(request):
     return render(request, 'group9/signup.html')
 
 
-def LoginPage(request):
+def login_page(request):
     if request.method=='POST':
         username=request.POST.get('username')
         pass1=request.POST.get('pass')
@@ -58,6 +57,27 @@ def LoginPage(request):
     return render (request,'group9/login.html')
 
 
-def LogoutPage(request):
+def logout_page(request):
     logout(request)
     return redirect('login')
+
+
+def dynamic_view(request, path):
+    #TODO: check if dir exists/create a good 404 page
+
+    path = os.path.join('group9/templates', path)
+    if path.endswith('/'):
+        return handle_directory(request, path)
+    else:
+        return handle_file(request, path)
+
+
+
+def handle_directory(request, path):
+    path = os.path.abspath(path)
+    template_path = os.path.join(path, f'{os.path.basename(path)}.html')
+    return render(request, template_path)
+
+
+def handle_file(request, path):
+    return render(request, os.path.abspath(path))
