@@ -5,18 +5,8 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=11)
-    
-    # Resolve conflicts by customizing related_name
-    groups = models.ManyToManyField(
-        Group,
-        related_name="customuser_groups",  # Unique related_name for groups
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name="customuser_permissions",  # Unique related_name for permissions
-        blank=True
-    )
+    groups = None
+    user_permissions = None
 
     def __str__(self):
         return self.username
@@ -24,7 +14,7 @@ class CustomUser(AbstractUser):
 
 class TextOptimizer(models.Model):
     input_text = models.TextField()
-    optimized_text = models.TextField()  # Fixed typo: "oprimized_text" to "optimized_text"
+    optimized_text = models.TextField()
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
