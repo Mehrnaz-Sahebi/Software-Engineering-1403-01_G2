@@ -12,6 +12,7 @@ normalizer_english = Normalizer(pinglish_conversion_needed=True)
 tokenizer = Tokenizer()
 stemmer = FindStems()
 
+
 def normalize(text):
     return normalizer.normalize(normalizer_english.normalize(text))
 
@@ -32,7 +33,7 @@ def create_tokens_from_text(text, improve_parsivar):
     if improve_parsivar:
         text = cleanText(text)
         text = deleteHalfSpace(text)
-        text = normalizeVerb(text)    
+        text = normalizeVerb(text)
     tokens = tokenize(text)
     stem_tokens = findStem(tokens)
     return stem_tokens
@@ -67,6 +68,7 @@ def merge_dictionaries(normal_probabilities, stopword_probabilities):
 
     return merged_probabilities
 
+
 def compute_probabilities(frequency_counter):
     normal_probabilities = defaultdict(list)
     stopword_probabilities = defaultdict(list)
@@ -89,6 +91,7 @@ def compute_probabilities(frequency_counter):
 
     probabilities = merge_dictionaries(normal_probabilities, stopword_probabilities)
     return probabilities
+
 
 def save_to_first_database(probabilities):
     mydb = create_db_connection(
@@ -148,6 +151,7 @@ def save_to_first_database(probabilities):
     cursor.close()
     mydb.close()
 
+
 def save_to_second_database(probabilities):
     mydb = create_db_connection(
         DB_HOST=DB_HOST,
@@ -206,16 +210,19 @@ def save_to_second_database(probabilities):
     cursor.close()
     mydb.close()
 
+
 def save_to_database(probabilities, improve_parsivsar):
     if improve_parsivsar:
         save_to_second_database(probabilities)
     else:
         save_to_first_database(probabilities)
 
+
 def train_model(improve_parsivar):
     dataset = load_dataset("codersan/Persian-Wikipedia-Corpus")
     create_dataset(dataset, improve_parsivar)
     probabilities = compute_probabilities(frequency_counter)
     save_to_database(probabilities, improve_parsivar)
+
 
 train_model(improve_parsivar=True)
