@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
 import { sendWordsToLearn } from "@/app/api/learn";
@@ -16,6 +16,16 @@ const SuggestionBox: React.FC = () => {
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
     const { username, setUsername } = useUser();
+
+    // Load saved content when the component mounts and username is available
+    useEffect(() => {
+        if (username) {
+            const savedContent = localStorage.getItem(username);
+            if (savedContent) {
+                setInputValue(savedContent);
+            }
+        }
+    }, [username]);
 
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -137,6 +147,10 @@ const SuggestionBox: React.FC = () => {
 
     const handleLogout = async () => {
         try {
+            // Save content in localStorage before logout
+            if (username) {
+                localStorage.setItem(username, inputValue);
+            }
             await logout();
             setUsername("");
             window.location.href = "/";
