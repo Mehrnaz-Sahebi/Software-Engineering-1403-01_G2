@@ -1,7 +1,7 @@
 'use client';
 
-import React, {useState, useRef} from "react";
-import {fetchSuggestions} from "@/app/api/suggest";
+import React, { useState, useRef } from "react";
+import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
 
 const SuggestionBox: React.FC = () => {
@@ -33,7 +33,7 @@ const SuggestionBox: React.FC = () => {
     const handleKeyUp = () => {
         if (textAreaRef.current) {
             const textarea = textAreaRef.current;
-            const {selectionStart} = textarea;
+            const { selectionStart } = textarea;
 
             // Create a hidden mirror div to calculate cursor position
             const hiddenDiv = document.createElement("div");
@@ -123,6 +123,10 @@ const SuggestionBox: React.FC = () => {
         setAutoSuggest((prev) => !prev);
     };
 
+    const clearTextArea = () => {
+        setInputValue(""); // Clear the text area content
+    };
+
     return (
         <div className="relative">
             <div className="flex justify-end">
@@ -147,6 +151,12 @@ const SuggestionBox: React.FC = () => {
                     <span role="img" aria-label="keyboard">
                         ⌨️
                     </span>
+                </button>
+                <button
+                    onClick={clearTextArea}
+                    className="mx-1 bg-red-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-red-600 focus:outline-none"
+                >
+                    Clear Text Area
                 </button>
             </div>
             <textarea
@@ -181,7 +191,7 @@ const SuggestionBox: React.FC = () => {
                     ))}
                 </ul>
             )}
-            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard}/>}
+            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard} />}
         </div>
     );
 };
