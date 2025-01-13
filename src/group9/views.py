@@ -4,7 +4,7 @@ from registration.database.query import *
 from django.db import IntegrityError
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-from group9.logic import optimize_text
+from group9.logic import optimize_text,fetch_user_history
 from django.contrib.auth.models import User
 
 def home(request):
@@ -31,7 +31,7 @@ def SignupPage(request):
                 my_user.save()
                 mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
                 save_user(mydb, name, uname, pass1, email, age)
-                return redirect('login')
+                return redirect('group9:login')
             except IntegrityError:
                 return HttpResponse("An error occurred while creating your account. Please try again.")
     
@@ -47,8 +47,8 @@ def LoginPage(request):
         print(username)
         print(pass1)
         if user is not None:
-            login(request,user)
-            return redirect('optimize')
+            login(request,user)  
+            return redirect('group9:optimize')
         else:
             return HttpResponse ("Username or Password is incorrect!!!")
     return render (request,'group9/login.html')
@@ -93,3 +93,22 @@ def OptimizePage(request):
 
     # For GET requests, just render the empty form
     return render(request, 'group9/optimize.html')
+
+
+
+def HistoryPage(request):
+    if not request.user.is_authenticated:
+        return redirect('group9:login')  # Redirect to login if the user is not authenticated
+
+    # print(f"Authenticated User: {request.user}")  # Debugging the user object
+    # print(f"User ID: {request.user.id}") 
+    user =str( request.user.username)
+    print(user)
+    db_connection = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+
+    # Fetch history using logic function
+    user_history = fetch_user_history(user, db_connection)
+    print(user_history)
+    # return render(request, 'group9/history.html', {'history': user_history})
+    return render(request, 'group9/history.html', {'mistakes': user_history})
+

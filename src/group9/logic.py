@@ -35,12 +35,13 @@ def find_out_mistakes(normalizing_function: callable,
     text_after_change = normalizing_function(text_before_change)
     if not text_before_change == text_after_change:
         does_current_mistake_exist = does_mistake_exist(db_connection, text_id, mistake_type, username)
+        print(does_current_mistake_exist)
         if not does_current_mistake_exist:
             save_mistake(db_connection, text_id, mistake_type, "-", username, notes[mistake_type], text_after_change)
 
 
 
-def optimize_text(input: str,
+def optimize_text(input: str, 
                   user: User,
                   correct_spacing: bool,
                   remove_diacrities: bool,
@@ -53,11 +54,11 @@ def optimize_text(input: str,
                   db_connection) -> str:
     
     # checks if the current input text has been processed before (the exact same text in the same day by the same user)
+    # user.username = "m.sahebi22"
     does_input_exist = does_text_exist(db_connection, input, user.username)
     print(does_input_exist)
 
     normalizer = Normalizer()
-    user.username = "m.sahebi22"
     # completely normalizes the input text and if it doesn't already exists, saves the text in the database
     completely_normalized_output = normalizer.normalize(input)
     if not does_input_exist:
@@ -105,3 +106,11 @@ def optimize_text(input: str,
         partially_normalized_output = normalizer.seperate_mi(partially_normalized_output)
 
     return partially_normalized_output
+
+
+
+def fetch_user_history(user, db_connection):
+    print(user)
+    userID = get_user_id_by_username(db_connection,user)
+    print(userID)
+    return get_user_history(db_connection, userID)
