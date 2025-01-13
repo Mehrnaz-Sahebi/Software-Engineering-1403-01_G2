@@ -204,6 +204,8 @@
             <button type="button">View History</button>
         </a>
 
+        <a href="{% url 'group9:logout' %}" class="logout-button">Logout</a>
+
         {% if optimized_text %}
         <h2>Optimized Text</h2>
         <textarea readonly>{{ optimized_text }}</textarea>

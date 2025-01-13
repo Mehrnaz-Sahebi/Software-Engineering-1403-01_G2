@@ -43,9 +43,9 @@ def LoginPage(request):
         username=request.POST.get('username')
         pass1=request.POST.get('pass')
         user=authenticate(request,username=username,password=pass1)
-        print(user.email)
-        print(username)
-        print(pass1)
+        # print(user.email)
+        # print(username)
+        # print(pass1)
         if user is not None:
             login(request,user)  
             return redirect('group9:optimize')
@@ -56,7 +56,7 @@ def LoginPage(request):
 
 def LogoutPage(request):
     logout(request)
-    return redirect('login')
+    return redirect('group9:login')
 
 
 # @login_required
