@@ -6,12 +6,12 @@ export default function Home() {
       <div className="m-4 bg-white p-8 rounded-lg shadow-lg">
           <LinkLabel
               text="Welcome to Magical Next Word Suggestion Web!"
-              link="/group10/login"
+              link="/login"
               linkText="Login"
           />
           <LinkLabel
           text="Do not have an account? No problem! Signup now!"
-          link="/group10/signup"
+          link="/signup"
           linkText="Signup"
       />
       </div>

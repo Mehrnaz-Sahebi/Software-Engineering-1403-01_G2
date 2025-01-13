@@ -104,8 +104,8 @@ const SignupPage: React.FC = () => {
                     Signup
                 </button>
             </form>
-            <LinkLabel text="Already have an account?" link="/group10/login" linkText="Login" />
-            <LinkLabel text="Do not want to signup?" link="/group10" linkText="Home" />
+            <LinkLabel text="Already have an account?" link="/login" linkText="Login" />
+            <LinkLabel text="Do not want to signup?" link="/" linkText="Home" />
         </div>
     );
 };
