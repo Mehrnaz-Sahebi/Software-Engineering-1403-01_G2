@@ -9,6 +9,11 @@ export default function Home() {
               link="/group10/login"
               linkText="Login"
           />
+          <LinkLabel
+          text="Do not have an account? No problem! Signup now!"
+          link="/group10/signup"
+          linkText="Signup"
+      />
       </div>
   );
 }
