@@ -12,3 +12,4 @@ pymysql
 hazm
 parsivar
 tqdm
+datasets
