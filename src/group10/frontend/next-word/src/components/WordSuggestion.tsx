@@ -1,6 +1,7 @@
 'use client';
 
-import React, {useRef, useState} from "react";
+import React, { useState, useRef } from "react";
+import {fetchSuggestions} from "@/app/api/suggest";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
@@ -9,27 +10,14 @@ const SuggestionBox: React.FC = () => {
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const wordList = [
-        "email service",
-        "email address",
-        "email addresses",
-        "email system",
-        "email and",
-        "email and your",
-        "email program",
-        "email newsletter",
-    ];
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
 
         const lastWord = value.split(/\s+/).pop(); // Get the last word
         if (lastWord) {
-            const filteredSuggestions = wordList.filter((word) =>
-                word.toLowerCase().startsWith(lastWord.toLowerCase())
-            );
-            setSuggestions(filteredSuggestions);
+            const fetchedSuggestions = await fetchSuggestions(lastWord);
+            setSuggestions(fetchedSuggestions);
             setActiveIndex(null); // Reset active index
         } else {
             setSuggestions([]);
