@@ -17,9 +17,7 @@ from database.secret import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def suggest_api(request):
-    data = json.loads(request.body)
-
-    past_word = data.get("past_word")
+    past_word = request.GET.get("past_word")
     suggestions = []
 
     if past_word:
@@ -105,6 +103,8 @@ def login_api(request):
     return HttpResponse()
 
 
-@api_view(["POST"])
+@api_view(["GET"])
 def logout_api(request):
     logout(request)
+
+    return HttpResponse()
