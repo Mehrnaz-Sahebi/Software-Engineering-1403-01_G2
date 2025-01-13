@@ -65,7 +65,7 @@ const LoginPage: React.FC = () => {
                 </button>
             </form>
             <LinkLabel text="Not a Member?" link="/group10/signup" linkText="Signup" />
-            <LinkLabel text="Want to go home?" link="/group10/" linkText="Home" />
+            <LinkLabel text="Want to go home?" link="/group10" linkText="Home" />
         </div>
     );
 };
