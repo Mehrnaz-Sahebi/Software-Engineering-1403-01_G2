@@ -26,11 +26,15 @@ class RabbitMQClient:
             print(f"RabbitMQ health check failed: {e}")
         
 
+    def _create_connection(self):
+        return pika.BlockingConnection(pika.ConnectionParameters('rabbitmq', 5672))
+
     def send_message(self, message, callback):
+        connection = self._create_connection()
+        channel = connection.channel()
         correlation_id = str(uuid.uuid4())
 
-        # Publish the message to the text_queue
-        self.channel.basic_publish(
+        channel.basic_publish(
             exchange='',
             routing_key='text_queue',
             properties=pika.BasicProperties(
@@ -39,22 +43,21 @@ class RabbitMQClient:
             body=message,
         )
 
-        # Start a thread to listen for responses in meanings_queue
         def listen_for_response():
-            for method, properties, body in self.channel.consume(queue='meanings_queue', auto_ack=True):
-                try:
-                    # Deserialize the response
+            try:
+                for method, properties, body in channel.consume(queue='meanings_queue', auto_ack=True):
                     response = json.loads(body)
-                    print(response)
-
-                    # Check if the correlation ID matches the current request
+                    print(f"Received response: {response}")
                     if response[0].get("correlation_id") == correlation_id:
                         callback(response.get("results"))
                         break
-                except Exception as e:
-                    callback(f"Error: {str(e)}")
-                    break
-        #listen_for_response()
+            except Exception as e:
+                callback(f"Error: {str(e)}")
+            finally:
+                # Close the channel and connection
+                channel.close()
+                connection.close()
+
         threading.Thread(target=listen_for_response, daemon=True).start()
     
 
