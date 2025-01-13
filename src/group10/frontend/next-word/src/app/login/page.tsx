@@ -2,26 +2,18 @@
 import React, { useState } from "react";
 import LinkLabel from "@/components/LinkLabel";
 import FormRaw from "@/components/FormRaw";
+import { fetchCSRF } from "../api/csrf";
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const getCSRFToken = () => {
-        const name = "csrftoken";
-        const value = document.cookie
-            .split("; ")
-            .find(row => row.startsWith(name))
-            ?.split("=")[1];
-        return value || "";
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const csrfToken = getCSRFToken();
+        const csrfToken = await fetchCSRF()
 
-        const response = await fetch("/group10/login/", {
+        const response = await fetch("/group10/api/login/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -30,10 +22,10 @@ const LoginPage: React.FC = () => {
             body: JSON.stringify({ username, "pass": password }),
         });
 
-        if (response.status === 200) {
-            window.location.href = "/group10/";
+        if (response.ok) {
+            window.location.href = "/group10/next-word.html";
         } else {
-            console.log(`An error occurred. Response is ${response.body}`);
+            console.log("Failed to login.");
         }
     };
 
@@ -64,8 +56,8 @@ const LoginPage: React.FC = () => {
                     Login
                 </button>
             </form>
-            <LinkLabel text="Not a Member?" link="/signup" linkText="Signup" />
-            <LinkLabel text="Want to go home?" link="/" linkText="Home" />
+            <LinkLabel text="Not a Member?" link="/group10/signup.html" linkText="Signup" />
+            <LinkLabel text="Want to go home?" link="/group10/index.html" linkText="Home" />
         </div>
     );
 };
