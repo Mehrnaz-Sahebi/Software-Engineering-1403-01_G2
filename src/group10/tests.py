@@ -4,8 +4,8 @@ import string
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+
 from .urls import app_name
-import json
 
 
 class RegistrationTestCase(TestCase):
@@ -121,10 +121,21 @@ class SuggestTestCase(TestCase):
         self.bad_word = "اااااااا"
 
     def test_suggest_endpoint_with_results(self):
-        response = self.client.get(self.suggest_url, {"past_word": self.past_word})
+        response = self.client.get(self.csrf_url)
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        csrf_token = response.json()["csrf"]
+
+        response = self.client.get(
+            self.suggest_url,
+            {"past_word": self.past_word},
+            content_type="application/json",
+            headers={"X-CSRFToken": csrf_token},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
         self.assertIn("suggestions", data)
         self.assertEqual(len(data["suggestions"]), len(self.suggestions))
 
@@ -133,17 +144,38 @@ class SuggestTestCase(TestCase):
             self.assertEqual(suggestion["probability"], expected[1])
 
     def test_suggest_endpoint_with_no_results(self):
-        response = self.client.get(self.suggest_url, {"past_word": self.bad_word})
+        response = self.client.get(self.csrf_url)
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        csrf_token = response.json()["csrf"]
+
+        response = self.client.get(
+            self.suggest_url,
+            {"past_word": self.bad_word},
+            content_type="application/json",
+            headers={"X-CSRFToken": csrf_token},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
         self.assertIn("suggestions", data)
         self.assertEqual(len(data["suggestions"]), 0)
 
     def test_suggest_endpoint_with_no_past_word(self):
-        response = self.client.get(self.suggest_url)
+        response = self.client.get(self.csrf_url)
         self.assertEqual(response.status_code, 200)
 
-        data = json.loads(response.content)
+        csrf_token = response.json()["csrf"]
+
+        response = self.client.get(
+            self.suggest_url,
+            content_type="application/json",
+            headers={"X-CSRFToken": csrf_token},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
         self.assertIn("suggestions", data)
         self.assertEqual(len(data["suggestions"]), 0)
