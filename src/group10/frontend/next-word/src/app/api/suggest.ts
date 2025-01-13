@@ -1,6 +1,6 @@
 export async function fetchSuggestions(lastWord: string): Promise<string[]> {
     try {
-        const response = await fetch(`/group10/suggest/`, {
+        const response = await fetch(`/group10/api/suggest/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
