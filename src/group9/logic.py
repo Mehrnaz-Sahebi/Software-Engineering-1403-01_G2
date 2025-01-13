@@ -24,18 +24,19 @@ notes = {
 }
 
 
-def find_out_mistakes(normalizing_function,
+def find_out_mistakes(normalizing_function: callable,
                       text_before_change: str,
                       text_after_change: str, 
                       text_id: int,
                       username: str,
-                      mistake_type: str):
+                      mistake_type: str,
+                      db_connection):
     
     text_after_change = normalizing_function(text_before_change)
     if not text_before_change == text_after_change:
         does_current_mistake_exist = does_mistake_exist(db_connection, text_id, mistake_type, username)
         if not does_current_mistake_exist:
-            save_mistake(db_connection, text_id, mistake_type, None, username, notes[mistake_type], text_after_change)
+            save_mistake(db_connection, text_id, mistake_type, "-", username, notes[mistake_type], text_after_change)
 
 
 
@@ -48,19 +49,21 @@ def optimize_text(input: str,
                   persian_style: bool,
                   persian_number: bool,
                   unicodes_replacement: bool,
-                  seperate_mi: bool) -> str:
+                  seperate_mi: bool, 
+                  db_connection) -> str:
     
     # checks if the current input text has been processed before (the exact same text in the same day by the same user)
     does_input_exist = does_text_exist(db_connection, input, user.username)
+    print(does_input_exist)
 
     normalizer = Normalizer()
-
+    user.username = "m.sahebi22"
     # completely normalizes the input text and if it doesn't already exists, saves the text in the database
     completely_normalized_output = normalizer.normalize(input)
-    if not does_text_exist:
+    if not does_input_exist:
         save_text(db_connection, user.username, input, completely_normalized_output)
     
-    text_id = get_text_id_by_input_and_date(input, user.username)
+    text_id = get_text_id_by_input_and_date(db_connection, input, user.username)
 
     # declaring two variables for saving the mistakes in each step
     text_before_change = input
@@ -70,35 +73,35 @@ def optimize_text(input: str,
     partially_normalized_output = input
 
     if correct_spacing:
-        find_out_mistakes(Normalizer.correct_spacing, text_before_change, text_after_change, text_id, user.username, CORRECT_SPACING)
+        find_out_mistakes(normalizer.correct_spacing, text_before_change, text_after_change, text_id, user.username, CORRECT_SPACING, db_connection)
         partially_normalized_output = normalizer.correct_spacing(partially_normalized_output)
 
     if remove_diacrities:
-        find_out_mistakes(Normalizer.remove_diacritics, text_before_change, text_after_change, text_id, user.username, REMOVE_DIACRITIES)
+        find_out_mistakes(normalizer.remove_diacritics, text_before_change, text_after_change, text_id, user.username, REMOVE_DIACRITIES, db_connection)
         partially_normalized_output = normalizer.remove_diacritics(partially_normalized_output)
 
     if remove_special_chars:
-        find_out_mistakes(Normalizer.remove_specials_chars, text_before_change, text_after_change, text_id, user.username, REMOVE_SPECIAL_CHARS)
+        find_out_mistakes(normalizer.remove_specials_chars, text_before_change, text_after_change, text_id, user.username, REMOVE_SPECIAL_CHARS, db_connection)
         partially_normalized_output = normalizer.remove_specials_chars(partially_normalized_output)
 
     if decrease_repeated_chars:
-        find_out_mistakes(Normalizer.decrease_repeated_chars, text_before_change, text_after_change, text_id, user.username, DECREASE_REPEATED_CHARS)
+        find_out_mistakes(normalizer.decrease_repeated_chars, text_before_change, text_after_change, text_id, user.username, DECREASE_REPEATED_CHARS, db_connection)
         partially_normalized_output = normalizer.decrease_repeated_chars(partially_normalized_output)
 
     if persian_style:
-        find_out_mistakes(Normalizer.persian_style, text_before_change, text_after_change, text_id, user.username, PERSIAN_STYLE)
+        find_out_mistakes(normalizer.persian_style, text_before_change, text_after_change, text_id, user.username, PERSIAN_STYLE, db_connection)
         partially_normalized_output = normalizer.persian_style(partially_normalized_output)
 
     if persian_number:
-        find_out_mistakes(Normalizer.persian_number, text_before_change, text_after_change, text_id, user.username, PERSIAN_NUMBER)
+        find_out_mistakes(normalizer.persian_number, text_before_change, text_after_change, text_id, user.username, PERSIAN_NUMBER, db_connection)
         partially_normalized_output = normalizer.persian_number(partially_normalized_output)
 
     if unicodes_replacement:
-        find_out_mistakes(Normalizer.unicodes_replacement, text_before_change, text_after_change, text_id, user.username, UNICODES_REPLACEMENT)
+        find_out_mistakes(normalizer.unicodes_replacement, text_before_change, text_after_change, text_id, user.username, UNICODES_REPLACEMENT, db_connection)
         partially_normalized_output = normalizer.unicodes_replacement(partially_normalized_output)
 
     if seperate_mi:
-        find_out_mistakes(Normalizer.seperate_mi, text_before_change, text_after_change, text_id, user.username, SEPERATE_MI)
+        find_out_mistakes(normalizer.seperate_mi, text_before_change, text_after_change, text_id, user.username, SEPERATE_MI, db_connection)
         partially_normalized_output = normalizer.seperate_mi(partially_normalized_output)
 
     return partially_normalized_output

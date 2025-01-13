@@ -1,13 +1,9 @@
 from django.shortcuts import render, redirect, HttpResponse
 from registration.database.secret import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
-from group9.database.query import *
+from registration.database.query import *
 from django.db import IntegrityError
 from django.contrib.auth import authenticate,login,logout
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-import json
 from group9.logic import optimize_text
 from django.contrib.auth.models import User
 
@@ -51,8 +47,7 @@ def LoginPage(request):
         print(username)
         print(pass1)
         if user is not None:
-            user_logged_in = login(request,user)
-            print(user_logged_in)
+            login(request,user)
             return redirect('optimize')
         else:
             return HttpResponse ("Username or Password is incorrect!!!")
@@ -77,7 +72,7 @@ def OptimizePage(request):
         persian_number = request.POST.get('persian_number') == 'on'
         unicodes_replacement = request.POST.get('unicodes_replacement') == 'on'
         seperate_mi = request.POST.get('seperate_mi') == 'on'
-
+        mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
         # Call the optimize_text function
         optimized_text = optimize_text(
             input=input_text,
@@ -89,7 +84,8 @@ def OptimizePage(request):
             persian_style=persian_style,
             persian_number=persian_number,
             unicodes_replacement=unicodes_replacement,
-            seperate_mi=seperate_mi
+            seperate_mi=seperate_mi,
+            db_connection=mydb
         )
 
         # Render the template with the result

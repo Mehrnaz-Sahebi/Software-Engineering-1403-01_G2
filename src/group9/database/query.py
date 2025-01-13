@@ -4,12 +4,12 @@ from registration.database.secret import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST,
 from registration.database.query import *
 import mysql.connector as mysql
 
-db_connection = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
 
 # Function to save a text optimization record
 def save_text(mydb, username, input_text, optimized_text):
     cursor = mydb.cursor()
     user_id = get_user_id_by_username(mydb, username)
+    print(f"user={user_id}")
     if not user_id:
         print(f"User with username '{username}' does not exist.")
         return None
@@ -43,6 +43,7 @@ def fetch_text_by_id(mydb, text_id):
         cursor.close()
 
 def does_text_exist(mydb, input, username, date=date.today()):
+    print(date)
     if get_text_id_by_input_and_date(mydb, input, username, date) == None:
         return False
     return True
@@ -56,15 +57,14 @@ def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today())
     SELECT t.id
     FROM group9_text_optimization t
     INNER JOIN users u ON t.user_id = u.id
-    WHERE t.input_text = %s AND u.username = %s AND DATE(t.created_at) = %s
+    WHERE t.input_text = %s AND u.username = %s AND t.created_at = %s
     """
     try:
         # Execute the query
-        cursor.execute(query, (input_text, username, date))
-        result = cursor.fetchone()  # Fetch the first matching record
-
-        if result:
-            return result["id"]  # Return the text ID
+        cursor.execute(query, (input_text, username, f"{date} 00:00:00"))
+        results = cursor.fetchall()  # Fetch all rows to avoid unread results        
+        if results:
+            return results[0]["id"]  # Return the text ID
         else:
             return None  # No match found
     except mysql.Error as e:
