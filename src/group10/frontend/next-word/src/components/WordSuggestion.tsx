@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
+import {sendWordsToLearn} from "@/app/api/learn";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
@@ -123,8 +124,12 @@ const SuggestionBox: React.FC = () => {
         setAutoSuggest((prev) => !prev);
     };
 
-    const clearTextArea = () => {
-        setInputValue(""); // Clear the text area content
+    const clearTextArea = async () => {
+        const words = inputValue.split(/\s+/).filter((word) => word);
+        if (words.length > 0) {
+            await sendWordsToLearn(words);
+        }
+        setInputValue("");
     };
 
     return (
