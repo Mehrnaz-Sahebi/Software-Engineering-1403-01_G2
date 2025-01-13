@@ -35,6 +35,7 @@ type TokenMeaning struct {
 
 func main() {
 	loadData()
+	modifyMaps()
 	// Setup RabbitMQ connection
 	conn := rabbitMQConnenction()
 	defer conn.Close()

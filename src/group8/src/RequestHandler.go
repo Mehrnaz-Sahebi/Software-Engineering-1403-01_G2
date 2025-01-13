@@ -11,6 +11,7 @@ import (
 func search(word string) (map[string][]string, bool) {
 	meanings, found := globalTrie.Search(word)
 	if found == true {
+		meanings = SortStringMap(meanings, nil)
 		return meanings, true
 	}
 	str, tranlated := finglishTranslator(word)

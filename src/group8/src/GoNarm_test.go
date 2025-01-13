@@ -383,3 +383,77 @@ func TestModifyMaps(t *testing.T) {
 		t.Errorf("Step 2: Expected %v, got %v", expected, frequencies)
 	}
 }
+
+func TestSortWordsByFrequency(t *testing.T) {
+	tests := []struct {
+		name        string
+		words       map[string][]string
+		frequencies map[string]int
+		expected    map[string][]string
+	}{
+		{
+			name: "Sort by frequency in descending order",
+			words: map[string][]string{
+				"apple":  {"fruit", "red"},
+				"banana": {"fruit", "yellow"},
+				"carrot": {"vegetable", "orange"},
+			},
+			frequencies: map[string]int{
+				"apple":  5,
+				"carrot": 8,
+			},
+			expected: map[string][]string{
+				"carrot": {"vegetable", "orange"},
+				"apple":  {"fruit", "red"},
+				"banana": {"fruit", "yellow"},
+			},
+		},
+		{
+			name:        "Empty input maps",
+			words:       map[string][]string{},
+			frequencies: map[string]int{},
+			expected:    map[string][]string{},
+		},
+		{
+			name: "Single word",
+			words: map[string][]string{
+				"apple": {"fruit", "red"},
+			},
+			frequencies: map[string]int{
+				"apple": 10,
+			},
+			expected: map[string][]string{
+				"apple": {"fruit", "red"},
+			},
+		},
+		{
+			name: "Same frequency for all words",
+			words: map[string][]string{
+				"apple":  {"fruit", "red"},
+				"banana": {"fruit", "yellow"},
+				"carrot": {"vegetable", "orange"},
+			},
+			frequencies: map[string]int{
+				"apple":  5,
+				"banana": 5,
+				"carrot": 5,
+			},
+			expected: map[string][]string{
+				"apple":  {"fruit", "red"},
+				"banana": {"fruit", "yellow"},
+				"carrot": {"vegetable", "orange"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SortStringMap(tt.words, tt.frequencies)
+
+			// Check if the result matches the expected output
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("Test case '%s' failed: expected %v, got %v", tt.name, tt.expected, result)
+			}
+		})
+	}
+}

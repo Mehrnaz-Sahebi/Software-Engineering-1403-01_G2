@@ -71,8 +71,37 @@ func LoadFrequencies(filePath string) (map[string]int, error) {
 	return frequencies, nil
 }
 
+func SortStringMap(words map[string][]string, frequenciess map[string]int) map[string][]string {
+	if len(frequenciess) != 0 {
+		frequencies = frequenciess
+	}
+	keys := make([]string, 0, len(words))
+	for key := range words {
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		freqI, existsI := frequencies[keys[i]]
+		freqJ, existsJ := frequencies[keys[j]]
+		if !existsI {
+			freqI = 1
+		}
+		if !existsJ {
+			freqJ = 1
+		}
+		return freqI > freqJ // Sort in descending order
+	})
+	sortedWords := make(map[string][]string)
+	for _, key := range keys {
+		sortedWords[key] = words[key]
+	}
+	return sortedWords
+}
+
 // SortStrings sorts strings by their frequency in ascending order
-func SortStrings(stringsToSort []string, frequencies map[string]int) []string {
+func SortStrings(stringsToSort []string, frequenciess map[string]int) []string {
+	if len(frequenciess) != 0 {
+		frequencies = frequenciess
+	}
 	sort.Slice(stringsToSort, func(i, j int) bool {
 		freqI, existsI := frequencies[stringsToSort[i]]
 		freqJ, existsJ := frequencies[stringsToSort[j]]
