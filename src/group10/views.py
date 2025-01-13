@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -19,12 +20,14 @@ def Suggest(request):
 
 def SignupPage(request):
     if request.method == "POST":
-        uname = request.POST.get("username")
-        email = request.POST.get("email")
-        pass1 = request.POST.get("password1")
-        pass2 = request.POST.get("password2")
-        name = request.POST.get("name")
-        age = request.POST.get("age")
+        data = json.loads(request.body)
+
+        uname = data.get("username")
+        email = data.get("email")
+        pass1 = data.get("password1")
+        pass2 = data.get("password2")
+        name = data.get("name")
+        age = data.get("age")
 
         if pass1 != pass2:
             return HttpResponse("Your password and confirm password are not the same!")
@@ -52,15 +55,18 @@ def SignupPage(request):
 
 def LoginPage(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        pass1 = request.POST.get("pass")
+        data = json.loads(request.body)
+
+        username = data.get("username")
+        pass1 = data.get("pass")
+
         user = authenticate(request, username=username, password=pass1)
 
         if user is not None:
             login(request, user)
             return redirect("group10:home")
         else:
-            return HttpResponse("Username or Password is incorrect!!!")
+            return HttpResponse("Username or Password is incorrect.", status=403)
 
     return render(request, "login.html")
 
