@@ -1,6 +1,6 @@
 import React from 'react';
 
-function FormRaw(props: {htmlFor: string, label: string, id: string, type: string}) {
+function FormRaw(props: { htmlFor: string, label: string, id: string, type: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
     return (
         <div className="mb-4">
             <label htmlFor={props.htmlFor} className="block text-gray-700 font-medium mb-2">
@@ -11,6 +11,8 @@ function FormRaw(props: {htmlFor: string, label: string, id: string, type: strin
                 type={props.type}
                 className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={`Enter your ${props.htmlFor}`}
+                value={props.value}
+                onChange={props.onChange}
                 min={props.type === "number" ? "0" : undefined}
             />
         </div>
