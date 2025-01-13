@@ -8,6 +8,7 @@ from unittest.mock import patch
 from .urls import app_name
 import json
 
+
 class RegistrationTestCase(TestCase):
     def setUp(self):
         self.client = Client()
@@ -84,6 +85,7 @@ class RegistrationTestCase(TestCase):
         self.assertEqual(follow_response.status_code, 200)
         self.assertNotIn("_auth_user_id", self.client.session)
 
+
 class SuggestTestCase(TestCase):
     def setUp(self):
         self.client = Client()
@@ -95,7 +97,6 @@ class SuggestTestCase(TestCase):
         ]
         self.bad_word = "اااااااا"
 
-    
     def test_suggest_endpoint_with_results(self):
         response = self.client.get(self.suggest_url, {"past_word": self.past_word})
         self.assertEqual(response.status_code, 200)

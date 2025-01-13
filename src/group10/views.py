@@ -18,9 +18,7 @@ def suggest(request):
     past_word = request.GET.get("past_word")
     suggestions = []
     if past_word:
-        mydb = create_db_connection(
-            DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
-        )
+        mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
         cursor = mydb.cursor()
 
         try:
@@ -45,6 +43,7 @@ def suggest(request):
         {"current_word": word, "probability": prob} for word, prob in suggestions
     ]
     return JsonResponse({"suggestions": suggestions_data})
+
 
 def SignupPage(request):
     if request.method == "POST":
