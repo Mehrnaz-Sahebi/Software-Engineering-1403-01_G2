@@ -77,6 +77,9 @@ common_verbs = [
     "آیم", "آیی", "آید", "آییم", "آیید", "آیند"
 ]
 
+stop_words = [
+    "از", "به", "و", "در", "که", "با", "اگر", "تا", "هر", "هم", "همه", "همین", "یا", "چه", "کی", "که‌"
+]
 
 def cleanText(text):
     pattern = r'[!@#$%^&*()_\-+=\[\]{}\\|:;"\'<>?,./؟؛،]'
@@ -94,3 +97,6 @@ def normalizeVerb(text):
         replacement = f'می\u200c{verb}'
         text = re.sub(pattern, replacement, text)
     return text
+
+def isStopWord(word):
+    return word in stop_words
