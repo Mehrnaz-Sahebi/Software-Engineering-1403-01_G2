@@ -3,6 +3,7 @@ from tqdm import tqdm
 from collections import defaultdict
 from database_utils import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 from database_utils import create_db_connection
+from parsivarV2_utils import cleanText, deleteHalfSpace, normalizeVerb
 from datasets import load_dataset
 import heapq
 
@@ -10,7 +11,6 @@ normalizer = Normalizer()
 normalizer_english = Normalizer(pinglish_conversion_needed=True)
 tokenizer = Tokenizer()
 stemmer = FindStems()
-
 
 def normalize(text):
     return normalizer.normalize(normalizer_english.normalize(text))
@@ -27,8 +27,11 @@ def tokenize(text):
     return tokenizer.tokenize_words(text)
 
 
-def create_tokens_from_text(text):
+def create_tokens_from_text(text, improve_parsivar=False):
     text = normalize(text)
+    text = cleanText(text)
+    text = deleteHalfSpace(text)
+    text = normalizeVerb(text)    
     tokens = tokenize(text)
     stem_tokens = findStem(tokens)
     return stem_tokens
@@ -44,12 +47,12 @@ def count_frequency(tokens):
         frequency_counter[(past_word, current_word)] += 1
 
 
-def create_dataset(dataset):
+def create_dataset(dataset, improve_parsivar=False):
     dataset_size = len(dataset["train"])
 
     for index in tqdm(range(dataset_size), desc="Parsing document"):
         text = dataset["train"][index]["Text"]
-        tokens = create_tokens_from_text(text)
+        tokens = create_tokens_from_text(text, improve_parsivar)
         count_frequency(tokens)
 
 
@@ -68,8 +71,7 @@ def compute_probabilities(frequency_counter):
 
     return probabilities
 
-
-def save_to_database(probabilities):
+def save_to_first_database(probabilities):
     mydb = create_db_connection(
         DB_HOST=DB_HOST,
         DB_PORT=DB_PORT,
@@ -127,8 +129,20 @@ def save_to_database(probabilities):
     cursor.close()
     mydb.close()
 
+def save_to_second_database(probabilities):
+    pass
 
-dataset = load_dataset("codersan/Persian-Wikipedia-Corpus")
-create_dataset(dataset)
-probabilities = compute_probabilities(frequency_counter)
-save_to_database(probabilities)
+def save_to_database(probabilities, improve_parsivsar=False):
+    if improve_parsivsar:
+        save_to_second_database(probabilities)
+    else:
+        save_to_first_database(probabilities)
+
+def train_model(improve_parsivar=True):
+    dataset = load_dataset("codersan/Persian-Wikipedia-Corpus")
+    create_dataset(dataset, improve_parsivar)
+    probabilities = compute_probabilities(frequency_counter)
+    save_to_database(probabilities)
+
+
+print(create_tokens_from_text("سلام قربا‌ن م‌ن گفتم:((دیگر، چه مردک)). و او میرود و او می‌آید"))
