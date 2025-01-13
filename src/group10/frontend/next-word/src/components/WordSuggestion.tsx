@@ -3,8 +3,9 @@
 import React, { useState, useRef } from "react";
 import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
-import {sendWordsToLearn} from "@/app/api/learn";
-import {useUser} from "@/app/UserContext";
+import { sendWordsToLearn } from "@/app/api/learn";
+import { logout } from "@/app/api/logout";
+import { useUser } from "@/app/UserContext";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
@@ -14,7 +15,7 @@ const SuggestionBox: React.FC = () => {
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-    const { username } = useUser();
+    const { username, setUsername } = useUser();
 
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -129,14 +130,30 @@ const SuggestionBox: React.FC = () => {
     const clearTextArea = async () => {
         const words = inputValue.split(/\s+/).filter((word) => word);
         if (words.length > 0) {
-            await sendWordsToLearn({username, words});
+            await sendWordsToLearn({ username, words });
         }
         setInputValue("");
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            setUsername("");
+            window.location.href = "/";
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
     return (
         <div className="relative">
             <div className="flex justify-end">
+                <button
+                    onClick={handleLogout}
+                    className="mx-1 bg-red-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-red-600 focus:outline-none mr-auto"
+                >
+                    Logout
+                </button>
                 <button
                     onClick={handleFetchSuggestionsManually}
                     className="mx-1 bg-blue-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none"
