@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
 import {sendWordsToLearn} from "@/app/api/learn";
+import {useUser} from "@/app/UserContext";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
@@ -13,6 +14,7 @@ const SuggestionBox: React.FC = () => {
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+    const { username } = useUser();
 
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -127,7 +129,7 @@ const SuggestionBox: React.FC = () => {
     const clearTextArea = async () => {
         const words = inputValue.split(/\s+/).filter((word) => word);
         if (words.length > 0) {
-            await sendWordsToLearn(words);
+            await sendWordsToLearn({username, words});
         }
         setInputValue("");
     };
