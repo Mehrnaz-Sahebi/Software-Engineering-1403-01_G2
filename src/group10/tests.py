@@ -39,6 +39,7 @@ class RegistrationTestCase(TestCase):
                 "name": self.user_data["name"],
                 "age": self.user_data["age"],
             },
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 302)
@@ -60,6 +61,7 @@ class RegistrationTestCase(TestCase):
                 "username": self.user_data["username"],
                 "pass": self.user_data["password"],
             },
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 302)
