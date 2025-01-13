@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.shortcuts import HttpResponse, redirect, render
+from django.http import JsonResponse
 
 from database.query import create_db_connection, save_user
 from database.secret import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
@@ -16,7 +17,34 @@ def HomePage(request):
 
 
 def Suggest(request):
-    return render(request, "group10.html", {"group_number": "10"})
+    past_word = request.GET.get("past_word")
+    suggestions = []
+    if past_word:
+        mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+        cursor = mydb.cursor()
+
+        try:
+            cursor.execute(
+                """
+                SELECT current_word, probability
+                FROM G10_word_probabilities
+                WHERE past_word = %s
+                ORDER BY probability DESC
+                LIMIT 5;
+                """,
+                (past_word,),
+            )
+            suggestions = cursor.fetchall()
+        except IntegrityError:
+            return HttpResponse("Error fetching suggestions.")
+        finally:
+            cursor.close()
+            mydb.close()
+
+    suggestions_data = [
+        {"current_word": word, "probability": prob} for word, prob in suggestions
+    ]
+    return JsonResponse({"suggestions": suggestions_data})
 
 
 def SignupPage(request):
