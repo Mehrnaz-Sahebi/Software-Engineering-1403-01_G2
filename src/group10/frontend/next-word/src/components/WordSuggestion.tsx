@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from "react";
-import {fetchSuggestions} from "@/app/api/suggest";
+import { fetchSuggestions } from "@/app/api/suggest";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
@@ -93,17 +93,34 @@ const SuggestionBox: React.FC = () => {
         setActiveIndex(null); // Reset active index
     };
 
+    const handleFetchSuggestionsManually = async () => {
+        const lastWord = inputValue.split(/\s+/).pop(); // Get the last word
+        if (lastWord) {
+            const fetchedSuggestions = await fetchSuggestions(lastWord);
+            setSuggestions(fetchedSuggestions);
+            setActiveIndex(null); // Reset active index
+        }
+    };
+
     return (
         <div className="relative">
-      <textarea
-          ref={textAreaRef}
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyUp={handleKeyUp}
-          onKeyDown={handleKeyDown}
-          className="w-full h-40 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type something..."
-      ></textarea>
+            <div className="flex justify-end">
+                <button
+                    onClick={handleFetchSuggestionsManually}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none"
+                >
+                    Suggestion Words
+                </button>
+            </div>
+            <textarea
+                ref={textAreaRef}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyUp={handleKeyUp}
+                onKeyDown={handleKeyDown}
+                className="w-full h-40 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Type something..."
+            ></textarea>
             {suggestions.length > 0 && position && (
                 <ul
                     style={{
