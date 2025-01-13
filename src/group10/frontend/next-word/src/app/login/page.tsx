@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import LinkLabel from "@/components/LinkLabel";
 import FormRaw from "@/components/FormRaw";
-import { fetchCSRF } from "../api/csrf";
+import { fetchLogin } from "../api/login";
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState("");
@@ -11,21 +11,12 @@ const LoginPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const csrfToken = await fetchCSRF()
+        const result = await fetchLogin(
+            JSON.stringify({ username, "pass": password }),
+        );
 
-        const response = await fetch("/group10/api/login/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-            },
-            body: JSON.stringify({ username, "pass": password }),
-        });
-
-        if (response.ok) {
+        if (result) {
             window.location.href = "/group10/next-word.html";
-        } else {
-            console.log("Failed to login.");
         }
     };
 

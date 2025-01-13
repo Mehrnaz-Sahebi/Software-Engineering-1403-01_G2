@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
         "destination": '/login',
       },
       {
+        "source": '/group10/next-word.html',
+        "destination": '/next-word',
+      },
+      {
         "source": '/group10/index.html',
         "destination": '/',
       },
