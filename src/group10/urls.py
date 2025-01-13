@@ -8,6 +8,7 @@ from . import views
 app_name = "group10"
 urlpatterns = [
     path("api/suggest/", views.suggest_api, name="suggest"),
+    path("api/learn/", views.learn_api, name="learn"),
     path("api/csrf/", views.csrf_api, name="csrf"),
     path("api/signup/", views.signup_api, name="signup"),
     path("api/login/", views.login_api, name="login"),

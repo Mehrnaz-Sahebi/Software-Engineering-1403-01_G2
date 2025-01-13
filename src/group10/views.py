@@ -13,6 +13,65 @@ from database.secret import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 
 # Create your views here.
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def learn_api(request):
+    data = json.loads(request.body)
+    tokens = data.get("tokens")
+    username = data.get("username")
+
+    if not tokens or not isinstance(tokens, list):
+        return HttpResponse("Invalid tokens input.", status=400)
+
+    if not username:
+        return HttpResponse("Username is required.", status=400)
+
+    mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+    cursor = mydb.cursor()
+
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS G10_word_probabilities_user_customize (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                past_word TEXT,
+                current_word TEXT,
+                count INT DEFAULT 0
+            );
+        """)
+
+        for i in range(len(tokens) - 1):
+            past_word = tokens[i]
+            current_word = tokens[i + 1]
+
+            cursor.execute("""
+                SELECT count FROM G10_word_probabilities_user_customize
+                WHERE past_word = %s AND current_word = %s;
+            """, (past_word, current_word))
+
+            result = cursor.fetchone()
+
+            if result:
+                new_count = result[0] + 1
+                cursor.execute("""
+                    UPDATE G10_word_probabilities_user_customize
+                    SET count = %s
+                    WHERE past_word = %s AND current_word = %s;
+                """, (new_count, past_word, current_word))
+            else:
+                cursor.execute("""
+                    INSERT INTO G10_word_probabilities_user_customize (past_word, current_word, count)
+                    VALUES (%s, %s, 1);
+                """, (past_word, current_word))
+
+        mydb.commit()
+    except Exception as e:
+        return HttpResponse(f"Error learning data: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        mydb.close()
+
+    return HttpResponse("Learning data successfully updated.", status=200)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
