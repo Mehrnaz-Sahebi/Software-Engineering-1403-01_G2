@@ -1,27 +1,30 @@
 'use client';
 
 import React, { useState, useRef } from "react";
-import {fetchSuggestions} from "@/app/api/suggest";
+import { fetchSuggestions } from "@/app/api/suggest";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
+    const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
 
-        const lastWord = value.split(/\s+/).pop(); // Get the last word
-        if (lastWord) {
-            const fetchedSuggestions = await fetchSuggestions(lastWord);
-            setSuggestions(fetchedSuggestions);
-            setActiveIndex(null); // Reset active index
-        } else {
-            setSuggestions([]);
-            setActiveIndex(null); // Reset active index
+        if (autoSuggest) {
+            const lastWord = value.split(/\s+/).pop(); // Get the last word
+            if (lastWord) {
+                const fetchedSuggestions = await fetchSuggestions(lastWord);
+                setSuggestions(fetchedSuggestions);
+                setActiveIndex(null);
+            } else {
+                setSuggestions([]);
+                setActiveIndex(null);
+            }
         }
     };
 
@@ -93,17 +96,46 @@ const SuggestionBox: React.FC = () => {
         setActiveIndex(null); // Reset active index
     };
 
+    const handleFetchSuggestionsManually = async () => {
+        const lastWord = inputValue.split(/\s+/).pop(); // Get the last word
+        if (lastWord) {
+            const fetchedSuggestions = await fetchSuggestions(lastWord);
+            setSuggestions(fetchedSuggestions);
+            setActiveIndex(null); // Reset active index
+        }
+    };
+
+    const toggleAutoSuggest = () => {
+        setAutoSuggest((prev) => !prev);
+    };
+
     return (
         <div className="relative">
-      <textarea
-          ref={textAreaRef}
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyUp={handleKeyUp}
-          onKeyDown={handleKeyDown}
-          className="w-full h-40 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type something..."
-      ></textarea>
+            <div className="flex justify-end">
+                <button
+                    onClick={handleFetchSuggestionsManually}
+                    className="mx-1 bg-blue-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none"
+                >
+                    Suggestion Words
+                </button>
+                <button
+                    onClick={toggleAutoSuggest}
+                    className={`px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none ${
+                        autoSuggest ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-500 text-white hover:bg-gray-600"
+                    }`}
+                >
+                    {autoSuggest ? "Auto Suggest On" : "Auto Suggest Off"}
+                </button>
+            </div>
+            <textarea
+                ref={textAreaRef}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyUp={handleKeyUp}
+                onKeyDown={handleKeyDown}
+                className="w-full h-40 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Type something..."
+            ></textarea>
             {suggestions.length > 0 && position && (
                 <ul
                     style={{
