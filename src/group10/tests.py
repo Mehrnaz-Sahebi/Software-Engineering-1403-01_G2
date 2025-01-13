@@ -4,7 +4,6 @@ import string
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
-from unittest.mock import patch
 from .urls import app_name
 import json
 

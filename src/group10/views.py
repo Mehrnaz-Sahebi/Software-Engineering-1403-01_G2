@@ -35,8 +35,8 @@ def Suggest(request):
                 (past_word,),
             )
             suggestions = cursor.fetchall()
-        except Exception as e:
-            return JsonResponse({"error": "Error fetching suggestions"}, status=500)
+        except IntegrityError:
+            return HttpResponse("Error fetching suggestions.")
         finally:
             cursor.close()
             mydb.close()
