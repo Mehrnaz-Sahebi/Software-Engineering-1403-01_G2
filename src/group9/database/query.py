@@ -1,170 +1,273 @@
 import mysql.connector as mysql
-from group9.models import CustomUser, TextOptimizer, Mistake
-
-# تعریف تابع برای ایجاد اتصال به دیتابیس
-def create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME):
-    try:
-        mydb = mysql.connect(
-            host=DB_HOST,
-            port=DB_PORT,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            database=DB_NAME
-        )
-        print("Connection to MySQL DB successful")
-    except mysql.connector.Error as e:
-        print(f"The error '{e}' occurred")
-    return mydb
-
-
-
-def create_table(mydb, create_table_query):
-    cursor = mydb.cursor()
-    try:
-        cursor.execute(create_table_query)
-        mydb.commit()
-        print("Table created successfully")
-    except Exception as e:
-        print(f"The error '{e}' occurred")
-    finally:
-        cursor.close()
-
-
-
-def drop_table(mydb, table_name):
-    cursor = mydb.cursor()
-    try:
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
-        mydb.commit()
-        print(f"Table {table_name} dropped successfully")
-    except Exception as e:
-        print(f"The error '{e}' occurred")
-    finally:
-        cursor.close()
-
-
-
-def fetch_row_by_PRIMARY_KEY(mydb, table_name, id):
-    cursor = mydb.cursor()
-    try:
-        query = f"SELECT * FROM {table_name} WHERE id = %s"
-        cursor.execute(query, (id,))
-        
-        result = cursor.fetchone()
-        
-        if result:
-            return result
-        else:
-            print("No row found for the given ID.")
-            return None
-    except Exception as e:
-        print(f"The error '{e}' occurred")
-        return None
-    finally:
-        cursor.close()
-
-
-
+from datetime import date
+from registration.database.secret import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+from registration.database.query import *
 import mysql.connector as mysql
 
-def save_user(mydb, username, password, email, first_name, last_name, phone_number):
-    my_cursor = mydb.cursor()
 
-    # دستور SQL برای اضافه کردن کاربر
-    add_user_query = """
-    INSERT INTO users (username, password, email, first_name, last_name, phone_number)
-    VALUES (%s, %s, %s, %s, %s, %s);
+# Function to save a text optimization record
+def save_text(mydb, username, input_text, optimized_text):
+    cursor = mydb.cursor()
+    user_id = get_user_id_by_username(mydb, username)
+    print(f"user={user_id}")
+    if not user_id:
+        print(f"User with username '{username}' does not exist.")
+        return None
+
+    query = """
+    INSERT INTO group9_text_optimization (user_id, input_text, optimized_text, created_at)
+    VALUES (%s, %s, %s, %s);
     """
-    
     try:
-        # اجرای دستور و اضافه کردن کاربر
-        my_cursor.execute(add_user_query, (username, password, email, first_name, last_name, phone_number))
-        mydb.commit() # تایید تغییرات
-        print("User saved successfully.")
-    except mysql.Error as err:
-        print("Failed to insert user:", err)
+        cursor.execute(query, (user_id, input_text, optimized_text, date.today()))
+        mydb.commit()
+        print("Text saved successfully.")
+        return cursor.lastrowid  # Return the ID of the inserted record
+    except mysql.Error as e:
+        print(f"Failed to insert text: {e}")
+        return None
     finally:
-        my_cursor.close()
+        cursor.close()
+
+# Function to fetch a text by ID
+def fetch_text_by_id(mydb, text_id):
+    cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for column names in the result
+    query = "SELECT * FROM group9_text_optimization WHERE id = %s"
+    try:
+        cursor.execute(query, (text_id,))
+        return cursor.fetchone()
+    except mysql.Error as e:
+        print(f"Failed to fetch text: {e}")
+        return None
+    finally:
+        cursor.close()
+
+def does_text_exist(mydb, input, username, date=date.today()):
+    print(date)
+    if get_text_id_by_input_and_date(mydb, input, username, date) == None:
+        return False
+    return True
+
+def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today()):
+    """
+    Retrieve the ID of a text optimization entry based on input text, username, and date.
+    """
+    cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for more readable results
+    query = """
+    SELECT t.id
+    FROM group9_text_optimization t
+    INNER JOIN users u ON t.user_id = u.id
+    WHERE t.input_text = %s AND u.username = %s AND t.created_at = %s
+    """
+    try:
+        # Execute the query
+        cursor.execute(query, (input_text, username, f"{date} 00:00:00"))
+        results = cursor.fetchall()  # Fetch all rows to avoid unread results        
+        if results:
+            return results[0]["id"]  # Return the text ID
+        else:
+            return None  # No match found
+    except mysql.Error as e:
+        print(f"Failed to fetch text ID: {e}")
+        return None
+    finally:
+
+        cursor.close()
 
 
-def get_user_id_by_username(db_connection, username):
+# def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today()):
+#     """
+#     Retrieve the ID of a text optimization entry based on input text, username, and date.
+#     """
+#     cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for more readable results
+#     query = """
+#     SELECT t.id
+#     FROM group9_text_optimization t
+#     INNER JOIN users u ON t.user_id = u.id
+#     WHERE t.input_text = %s 
+#       AND u.username = %s 
+#     """
+#     try:
+#         # Execute the query
+#         cursor.execute(query, (input_text, username))
+#         results = cursor.fetchall()  # Fetch all rows to avoid unread results  
+#         print(results)
+#         print("*****")      
+#         if results:
+#             return results[0]["id"]  # Return the text ID
+#         else:
+#             return None  # No match found
+#     except mysql.Error as e:
+#         print(f"Failed to fetch text ID: {e}")
+#         return None
+#     finally:
+#         cursor.close()
+
+
+# Function to save a mistake
+def save_mistake(mydb, text_id, mistake_type, wrong_part, mistake_made_by_username, note, correct_form):
+    cursor = mydb.cursor()
+    user_id = get_user_id_by_username(mydb, mistake_made_by_username)
+    if not user_id:
+        print(f"User with username '{mistake_made_by_username}' does not exist.")
+        return None
+
+    query = """
+    INSERT INTO group9_mistake (text_id, mistake_type, wrong_part, user_id, note, created_at, correct_form)
+    VALUES (%s, %s, %s, %s, %s, %s, %s);
+    """
+    try:
+        cursor.execute(query, (text_id, mistake_type, wrong_part, user_id, note, date.today(), correct_form))
+        mydb.commit()
+        print("Mistake saved successfully.")
+        return cursor.lastrowid
+    except mysql.Error as e:
+        print(f"Failed to insert mistake: {e}")
+        return None
+    finally:
+        cursor.close()
+
+# Function to fetch mistakes by text ID
+def fetch_mistakes_by_text(mydb, text_id):
+    cursor = mydb.cursor(dictionary=True)
+    query = "SELECT * FROM group9_mistake WHERE text_id = %s"
+    try:
+        cursor.execute(query, (text_id,))
+        return cursor.fetchall()
+    except mysql.Error as e:
+        print(f"Failed to fetch mistakes: {e}")
+        return None
+    finally:
+        cursor.close()
+
+def does_mistake_exist(mydb, text_id, mistake_type, username, date=date.today()):
+    if get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, date) == None:
+        return False
+    return True
+
+def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, date=date.today()):
+    """
+    Retrieve a mistake record from the database based on text ID, mistake type, username, and date.
+    """
+    cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for better readability of results
+    query = """
+    SELECT m.*
+    FROM group9_mistake m
+    INNER JOIN users u ON m.user_id = u.id
+    WHERE m.text_id = %s AND m.mistake_type = %s AND m.created_at = %s AND u.username = %s
+    """
+    try:
+        cursor.execute(query, (text_id, mistake_type, date, username))
+        result = cursor.fetchone()
+        # print(result)
+        return result  # Return the mistake record if it exists
+    except mysql.Error as e:
+        print(f"Failed to fetch mistake: {e}")
+        return None
+    finally:
+        cursor.close()
+
+
+
+# Function to delete a text by ID
+def delete_text_by_id(mydb, text_id):
+    cursor = mydb.cursor()
+    query = "DELETE FROM group9_text_optimization WHERE id = %s"
+    try:
+        cursor.execute(query, (text_id,))
+        mydb.commit()
+        if cursor.rowcount > 0:
+            print(f"Text with ID {text_id} deleted successfully.")
+            return True
+        else:
+            print(f"Text with ID {text_id} does not exist.")
+            return False
+    except mysql.Error as e:
+        print(f"Failed to delete text: {e}")
+        return False
+    finally:
+        cursor.close()
+
+# Function to delete a mistake by ID
+def delete_mistake_by_id(mydb, mistake_id):
+    cursor = mydb.cursor()
+    query = "DELETE FROM group9_mistake WHERE id = %s"
+    try:
+        cursor.execute(query, (mistake_id,))
+        mydb.commit()
+        if cursor.rowcount > 0:
+            print(f"Mistake with ID {mistake_id} deleted successfully.")
+            return True
+        else:
+            print(f"Mistake with ID {mistake_id} does not exist.")
+            return False
+    except mysql.Error as e:
+        print(f"Failed to delete mistake: {e}")
+        return False
+    finally:
+        cursor.close()
+
+
+
+# def get_user_history(db_connection, userID):
+#     query = """
+#     SELECT mistake_type, note, correct_form,created_at
+#     FROM group9_mistake
+#     WHERE user_id = %s
+#     ORDER BY created_at DESC
+#     """
+#     cursor = db_connection.cursor()
+#     cursor.execute(query, (userID,))
+#     results = cursor.fetchall()
+#     # print(results)
+#     cursor.close()
+#     return [{'type': row[0], 'details': row[1], 'correct_form': row[2],'Date:' : row[3]} for row in results]
+
+def get_user_history(db_connection, userID):
+    query = """
+    SELECT 
+        t.input_text,
+        m.mistake_type, 
+        m.note, 
+        m.correct_form, 
+        m.created_at
+    FROM group9_mistake AS m
+    JOIN group9_text_optimization AS t ON m.text_id = t.id
+    WHERE m.user_id = %s
+    ORDER BY m.created_at DESC
+    """
     cursor = db_connection.cursor()
-    query = "SELECT id FROM users WHERE username = %s"
-    cursor.execute(query, (username,))
-    result = cursor.fetchone()  # Fetchone برای دریافت نتیجه اول کوئری استفاده می‌شود
+    cursor.execute(query, (userID,))
+    results = cursor.fetchall()
     cursor.close()
 
-    if result:
-        return result[0]  # بازگرداندن id کاربر
-    else:
-        return None  # اگر کاربری با این username وجود نداشته باشد
+    return [{
+        'type': row[1],
+        'details': row[2],
+        'correct_form': row[3],
+        'Date': row[4],
+        'input_text': row[0]
+    } for row in results]
+
+
+
+
+from mysql.connector import connect, Error
+def get_user_id_by_username(db_connection, username):
     
-# Method to create a new TextOptimizer for a User
-def create_text(username, input_text, optimized_text):
+    query = "SELECT id FROM users WHERE username = %s"
     try:
-        user = CustomUser.objects.get(username=username)
-        text = TextOptimizer.objects.create(
-            user=user,
-            input_text=input_text,
-            optimized_text=optimized_text
-        )
-        return text
-    except CustomUser.DoesNotExist:
-        return None
-
-# Method to fetch a TextOptimizer by ID
-def fetch_text_by_id(text_id):
-    try:
-        text = TextOptimizer.objects.get(id=text_id)
-        return text
-    except TextOptimizer.DoesNotExist:
-        return None
-
-# Method to create a new Mistake for a TextOptimizer
-def create_mistake(text_id, mistake_type, wrong_part, mistake_made_by_username, note):
-    try:
-        text = TextOptimizer.objects.get(id=text_id)
-        mistake_made_by = CustomUser.objects.get(username=mistake_made_by_username)
-        mistake = Mistake.objects.create(
-            text=text,
-            mistake_type=mistake_type,
-            wrong_part=wrong_part,
-            mistake_made_by=mistake_made_by,
-            note=note
-        )
-        return mistake
-    except (TextOptimizer.DoesNotExist, CustomUser.DoesNotExist):
+        cursor = db_connection.cursor()
+        cursor.execute(query, (username,))
+        result = cursor.fetchone()
+        cursor.close()
+        
+        if result:
+            return result[0]  # Return the user ID
+        else:
+            return None  # Username not found
+    except Error as e:
+        print(f"Database query error: {e}")
         return None
 
 
-# Method to fetch all Mistakes for a specific TextOptimizer
-def fetch_mistakes_by_text(text_id):
-    mistakes = Mistake.objects.filter(text_id=text_id)
-    return mistakes
-
-# Method to delete a user by username
-def delete_user_by_username(username):
-    try:
-        user = CustomUser.objects.get(username=username)
-        user.delete()
-        return True
-    except CustomUser.DoesNotExist:
-        return False
-
-# Method to delete a TextOptimizer by ID
-def delete_text_by_id(text_id):
-    try:
-        text = TextOptimizer.objects.get(id=text_id)
-        text.delete()
-        return True
-    except TextOptimizer.DoesNotExist:
-        return False
-
-# Method to delete a Mistake by ID
-def delete_mistake_by_id(mistake_id):
-    try:
-        mistake = Mistake.objects.get(id=mistake_id)
-        mistake.delete()
-        return True
-    except Mistake.DoesNotExist:
-        return False

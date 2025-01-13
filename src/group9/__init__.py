@@ -1,0 +1,1 @@
+default_app_config = 'group9.apps.Group9Config'
