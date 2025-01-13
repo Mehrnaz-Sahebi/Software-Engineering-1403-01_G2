@@ -1,9 +1,14 @@
+import { fetchCSRF } from "./csrf";
+
 export async function fetchSuggestions(lastWord: string): Promise<string[]> {
     try {
+        const csrfToken = await fetchCSRF()
+        
         const response = await fetch(`/group10/api/suggest/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
             },
             body: JSON.stringify({ past_word: lastWord }),
         });
@@ -13,7 +18,10 @@ export async function fetchSuggestions(lastWord: string): Promise<string[]> {
         }
 
         const data = await response.json();
-        return data.words; // Assuming the response has a structure { words: [] }
+
+        console.log(data.words)
+
+        return data.words;
     } catch (error) {
         console.error("Error fetching suggestions:", error);
         return [];

@@ -16,10 +16,10 @@ GLOBAL_DB_CONNECTION = create_db_connection(
 )
 
 
-@api_view(["GET"])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def suggest_api(request):
-    past_word = request.GET.get("past_word")
+    past_word = request.data.get("past_word")
     suggestions = []
 
     if past_word:
