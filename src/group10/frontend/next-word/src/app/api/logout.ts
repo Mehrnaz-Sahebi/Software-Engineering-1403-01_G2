@@ -1,10 +1,7 @@
 export const logout = async (): Promise<void> => {
     try {
         const response = await fetch("/group10/logout/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            method: "GET"
         });
 
         if (!response.ok) {

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import LinkLabel from "@/components/LinkLabel";
 import FormRaw from "@/components/FormRaw";
-import { fetchSignup } from "../api/signup";
+import { performSignup } from "../api/signup";
 
 const SignupPage: React.FC = () => {
     const [username, setUsername] = useState("");
@@ -15,7 +15,7 @@ const SignupPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const result = await fetchSignup(
+        const result = await performSignup(
             JSON.stringify({
                 username,
                 email,

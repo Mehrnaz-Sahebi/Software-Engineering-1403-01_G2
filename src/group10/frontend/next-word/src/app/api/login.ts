@@ -1,6 +1,6 @@
 import { fetchCSRF } from "./csrf";
 
-export async function fetchLogin(body: string): Promise<boolean> {
+export async function performLogin(body: string): Promise<boolean> {
     try {
         const csrfToken = await fetchCSRF()
 

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import LinkLabel from "@/components/LinkLabel";
 import FormRaw from "@/components/FormRaw";
-import { fetchLogin } from "../api/login";
+import { performLogin } from "../api/login";
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState("");
@@ -11,7 +11,7 @@ const LoginPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const result = await fetchLogin(
+        const result = await performLogin(
             JSON.stringify({ username, "pass": password }),
         );
 
