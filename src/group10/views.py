@@ -14,39 +14,132 @@ from database.secret import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 # Create your views here.
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def learn_api(request):
+    data = json.loads(request.body)
+    tokens = data.get("tokens")
+    username = data.get("username")
+    if not tokens or not isinstance(tokens, list):
+        return HttpResponse("Invalid tokens input.", status=400)
+
+    if not username:
+        return HttpResponse("Username is required.", status=400)
+    mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+    cursor = mydb.cursor()
+
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS G10_word_probabilities_user_customize (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username TEXT,
+                past_word TEXT,
+                current_word TEXT,
+                count INT DEFAULT 0
+            );
+        """)
+
+        for i in range(len(tokens) - 1):
+            past_word = tokens[i]
+            current_word = tokens[i + 1]
+
+            cursor.execute(
+                """
+                SELECT count FROM G10_word_probabilities_user_customize
+                WHERE username = %s AND past_word = %s AND current_word = %s;
+            """,
+                (username, past_word, current_word),
+            )
+
+            result = cursor.fetchone()
+
+            if result:
+                new_count = result[0] + 1
+                cursor.execute(
+                    """
+                    UPDATE G10_word_probabilities_user_customize
+                    SET count = %s
+                    WHERE username = %s AND past_word = %s AND current_word = %s;
+                """,
+                    (new_count, username, past_word, current_word),
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO G10_word_probabilities_user_customize (username, past_word, current_word, count)
+                    VALUES (%s, %s, %s, 1);
+                """,
+                    (username, past_word, current_word),
+                )
+
+        mydb.commit()
+    except Exception as e:
+        return HttpResponse(f"Error learning data: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        mydb.close()
+
+    return HttpResponse("Learning data successfully updated.", status=200)
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def suggest_api(request):
-    past_word = request.GET.get("past_word")
+    data = request.query_params
+    past_word = data.get("past_word")
+    username = data.get("username")
     suggestions = []
 
-    if past_word:
-        mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
-        cursor = mydb.cursor()
+    if not past_word:
+        return HttpResponse("Missing 'past_word' parameter.", status=400)
 
-        try:
-            cursor.execute(
-                """
-                SELECT current_word, probability
-                FROM G10_word_probabilities
-                WHERE past_word = %s
-                ORDER BY probability DESC
-                LIMIT 5;
-                """,
-                (past_word,),
-            )
-            suggestions = cursor.fetchall()
-        except Exception:
-            return HttpResponse("Error fetching suggestions.", status=500)
-        finally:
-            cursor.close()
-            mydb.close()
+    mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+    cursor = mydb.cursor()
 
-    suggestions_data = [
-        {"current_word": word, "probability": prob} for word, prob in suggestions
-    ]
+    try:
+        cursor.execute(
+            """
+            SELECT current_word
+            FROM G10_word_probabilities_improve_parsivar
+            WHERE past_word = %s
+            ORDER BY probability DESC
+            LIMIT 3;
+            """,
+            (past_word,),
+        )
+        global_suggestions = [row[0] for row in cursor.fetchall()]
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS G10_word_probabilities_user_customize (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username TEXT,
+                past_word TEXT,
+                current_word TEXT,
+                count INT DEFAULT 0
+            );
+        """)
+        cursor.execute(
+            """
+            SELECT current_word
+            FROM G10_word_probabilities_user_customize
+            WHERE username = %s AND past_word = %s
+            ORDER BY count DESC
+            LIMIT 1;
+            """,
+            (
+                username,
+                past_word,
+            ),
+        )
+        user_suggestions = [row[0] for row in cursor.fetchall()]
+        suggestions = global_suggestions + user_suggestions
 
-    return Response({"suggestions": suggestions_data})
+    except Exception as e:
+        return HttpResponse(f"Error fetching suggestions: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        mydb.close()
+
+    return Response({"suggestions": suggestions})
 
 
 @api_view(["GET"])
