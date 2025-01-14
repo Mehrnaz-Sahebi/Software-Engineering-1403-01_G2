@@ -128,23 +128,23 @@ func modifyMaps() {
 		}
 
 		// Save the map as a JSON file for future use
-		fmt.Printf("Saving frequencies to JSON: %v\n", frequencies)
+		//fmt.Printf("Saving frequencies to JSON: %v\n", frequencies)
 		err = SaveMapToJSON(frequencies, jsonFilePath)
 		if err != nil {
 			fmt.Printf("Error saving frequencies to JSON: %v\n", err)
 			return
 		}
-		fmt.Println("Frequencies saved to JSON.")
+		//fmt.Println("Frequencies saved to JSON.")
 	} else {
 		// JSON file exists, load the map from it
-		fmt.Println("Loading frequencies from JSON file...")
+		//fmt.Println("Loading frequencies from JSON file...")
 		var err error
 		frequencies, err = LoadMapFromJSON(jsonFilePath)
-		fmt.Print(frequencies)
+		//fmt.Print(frequencies)
 		if err != nil {
 			fmt.Printf("Error loading frequencies from JSON: %v\n", err)
 			return
 		}
-		fmt.Printf("Loaded frequencies from JSON: %v\n", frequencies)
+		//fmt.Printf("Loaded frequencies from JSON: %v\n", frequencies)
 	}
 }
