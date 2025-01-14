@@ -73,7 +73,7 @@ const SuggestionBox: React.FC = () => {
             const cursorPos = textarea.selectionStart;
 
             setPosition({
-                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + enterPosition,
+                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + enterPosition * 10,
                 left: hiddenDiv.scrollWidth - 280 - cursorPos ,
             });
 
