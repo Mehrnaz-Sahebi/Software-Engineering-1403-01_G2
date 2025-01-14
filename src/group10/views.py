@@ -18,14 +18,19 @@ GLOBAL_DB_CONNECTION = create_db_connection(
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def learn_api(request):
-    tokens = request.data.get("tokens")
-    username = request.data.get("username")
+    if request.content_type != "application/json":
+        return JsonResponse(
+            {"error": "invalid content type. expected application/json."}, status=400
+        )
 
-    if not tokens or not isinstance(tokens, list):
-        return JsonResponse({"error": "invalid tokens."}, status=400)
+    username = request.data.get("username")
+    tokens = request.data.get("tokens")
 
     if not username:
         return JsonResponse({"error": "username is required."}, status=400)
+
+    if not tokens or not isinstance(tokens, list):
+        return JsonResponse({"error": "invalid tokens."}, status=400)
 
     try:
         cursor = GLOBAL_DB_CONNECTION.cursor()
@@ -89,12 +94,21 @@ def learn_api(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def suggest_api(request):
-    past_word = request.data.get("past_word")
-    username = request.data.get("username")
-    suggestions = []
+    if request.content_type != "application/json":
+        return JsonResponse(
+            {"error": "invalid content type. expected application/json."}, status=400
+        )
 
-    if not all([past_word, username]):
-        return JsonResponse({"error": "all fields are required."}, status=400)
+    username = request.data.get("username")
+    past_word = request.data.get("past_word")
+
+    if not username:
+        return JsonResponse({"error": "username is required."}, status=400)
+
+    if not past_word:
+        return JsonResponse({"error": "past_word is required."}, status=400)
+
+    suggestions = []
 
     try:
         cursor = GLOBAL_DB_CONNECTION.cursor()
@@ -158,6 +172,11 @@ def csrf_api(request):
 
 @api_view(["POST"])
 def signup_api(request):
+    if request.content_type != "application/json":
+        return JsonResponse(
+            {"error": "invalid content type. expected application/json."}, status=400
+        )
+
     uname = request.data.get("username")
     email = request.data.get("email")
     pass1 = request.data.get("password1")

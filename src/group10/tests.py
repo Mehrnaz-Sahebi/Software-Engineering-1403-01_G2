@@ -49,7 +49,7 @@ class RegistrationTestCase(TestCase):
             headers={"X-CSRFToken": csrf_token},
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertTrue(
             User.objects.filter(username=self.user_data["username"]).exists()
         )
@@ -114,6 +114,8 @@ class SuggestTestCase(TestCase):
 
         self.suggest_url = reverse(f"{app_name}:suggest")
         self.learn_url = reverse(f"{app_name}:learn")
+        self.csrf_url = reverse(f"{app_name}:csrf")
+
         self.past_word1 = "حافظ"
         self.suggestion1 = "شیرازی"
         self.past_word2 = "حافظ"
@@ -126,9 +128,9 @@ class SuggestTestCase(TestCase):
 
         csrf_token = response.json()["csrf"]
 
-        response = self.client.get(
+        response = self.client.post(
             self.suggest_url,
-            {"past_word": self.past_word1},
+            {"username": self.user_data["username"], "past_word": self.past_word1},
             content_type="application/json",
             headers={"X-CSRFToken": csrf_token},
         )
@@ -147,9 +149,9 @@ class SuggestTestCase(TestCase):
 
         csrf_token = response.json()["csrf"]
 
-        response = self.client.get(
+        response = self.client.post(
             self.suggest_url,
-            {"past_word": self.bad_word},
+            {"username": self.user_data["username"], "past_word": self.bad_word},
             content_type="application/json",
             headers={"X-CSRFToken": csrf_token},
         )
@@ -166,9 +168,9 @@ class SuggestTestCase(TestCase):
 
         csrf_token = response.json()["csrf"]
 
-        response = self.client.get(
+        response = self.client.post(
             self.suggest_url,
-            {"past_word": ""},
+            {"username": self.user_data["username"], "past_word": ""},
             content_type="application/json",
             headers={"X-CSRFToken": csrf_token},
         )
@@ -178,7 +180,14 @@ class SuggestTestCase(TestCase):
         response = self.client.get(self.csrf_url)
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(self.suggest_url, {"past_word": self.past_word2})
+        csrf_token = response.json()["csrf"]
+
+        response = self.client.post(
+            self.suggest_url,
+            {"username": self.user_data["username"], "past_word": self.past_word2},
+            content_type="application/json",
+            headers={"X-CSRFToken": csrf_token},
+        )
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
@@ -189,14 +198,20 @@ class SuggestTestCase(TestCase):
 
         response = self.client.post(
             self.learn_url,
-            {"tokens": ["حافظ", "دروازه"], "username": self.user_data["username"]},
+            {"username": self.user_data["username"], "tokens": ["حافظ", "دروازه"]},
             content_type="application/json",
+            headers={"X-CSRFToken": csrf_token},
         )
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(
+        response = self.client.post(
             self.suggest_url,
-            {"past_word": self.past_word2, "username": self.user_data["username"]},
+            {
+                "username": self.user_data["username"],
+                "past_word": self.past_word2,
+            },
+            content_type="application/json",
+            headers={"X-CSRFToken": csrf_token},
         )
         self.assertEqual(response.status_code, 200)
 
