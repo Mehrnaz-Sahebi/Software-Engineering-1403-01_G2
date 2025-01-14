@@ -1,7 +1,7 @@
 from django.urls import path
 from django.views.static import serve
 
-from FarsiAid_website.settings import STATICFILES_DIRS
+from FarsiAid_website.settings import BASE_DIR
 
 from . import views
 
@@ -13,5 +13,5 @@ urlpatterns = [
     path("api/signup/", views.signup_api, name="signup"),
     path("api/login/", views.login_api, name="login"),
     path("api/logout/", views.logout_api, name="logout"),
-    path("<path:path>", serve, {"document_root": STATICFILES_DIRS[0]}),
+    path("<path:path>", serve, {"document_root": BASE_DIR / "group10/static"}),
 ]
