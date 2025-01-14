@@ -50,7 +50,9 @@ def does_text_exist(mydb, input, username, date=date.today()):
 
 def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today()):
     """
-    Retrieve the ID of a text optimization entry based on input text, username, and date.
+    This function retrieves the ID of a text optimization entry based on the input text, the username of the user who submitted it,
+    and the date when the text was created. This is useful for checking if the same text has already been optimized by the user 
+    on a particular day.
     """
     cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for more readable results
     query = """
@@ -147,7 +149,8 @@ def does_mistake_exist(mydb, text_id, mistake_type, username, date=date.today())
 
 def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, date=date.today()):
     """
-    Retrieve a mistake record from the database based on text ID, mistake type, username, and date.
+    This function fetches a mistake record based on the provided parameters: text ID, mistake type, username of the user, 
+    and date. It helps track whether a particular type of mistake has already been logged for a specific text and user.
     """
     cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for better readability of results
     query = """

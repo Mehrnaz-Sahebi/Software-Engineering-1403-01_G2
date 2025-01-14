@@ -8,10 +8,39 @@ from group9.logic import optimize_text,fetch_user_history
 from django.contrib.auth.models import User
 
 def home(request):
+    """
+    This view renders the homepage of the application.
+
+    It simply returns a response rendering the 'group9.html' template.
+    The template is passed a dictionary with the key 'group_number', which holds the group number (9) to display on the page.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A response rendering the homepage template with the group number information.
+    """
     return render (request , 'group9.html' , {'group_number': '9'})
 
 
 def SignupPage(request):
+    """
+    This view handles the user registration (signup) process.
+
+    If the HTTP request method is POST, it means the user has submitted the registration form. The view extracts the submitted data:
+    - Username, email, password1, password2, name, and age from the form.
+    It checks if the passwords match, and if the username is already taken. If there are any issues, the function will return appropriate error messages.
+    
+    If everything is valid, a new user is created using Django's `create_user` method. After saving the user to the system, the user details are also stored in the custom database using the `save_user` function. 
+
+    If the user is created successfully, they are redirected to the login page. If there are any errors during the process, an appropriate error message is displayed.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A response rendering the signup template or redirecting to the login page if registration is successful.
+    """
     if request.method == 'POST':
         uname = request.POST.get('username')
         email = request.POST.get('email')
@@ -39,6 +68,21 @@ def SignupPage(request):
 
 
 def LoginPage(request):
+    """
+    This view handles user login.
+
+    If the HTTP request method is POST, it means the user has submitted the login form. The view retrieves the submitted username and password.
+    It uses Django's `authenticate` function to verify the user's credentials.
+    If the credentials are valid, the user is logged in and redirected to the optimize page.
+    
+    If the login fails, an error message is shown.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A response rendering the login template or redirecting to the optimize page if login is successful.
+    """
     if request.method=='POST':
         username=request.POST.get('username')
         pass1=request.POST.get('pass')
@@ -55,12 +99,38 @@ def LoginPage(request):
 
 
 def LogoutPage(request):
+    """
+    This view handles user logout.
+
+    When the user clicks logout, this view will log them out and redirect to the login page.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A response redirecting to the login page after successful logout.
+    """
     logout(request)
     return redirect('group9:login')
 
 
 # @login_required
 def OptimizePage(request):
+    """
+    This view handles the text optimization process.
+
+    If the HTTP request method is POST, it means the user has submitted the optimization form.
+    The view retrieves the text input and the user preferences for different normalization options (e.g., correct spacing, remove diacritics, etc.).
+    The `optimize_text` function is then called with the provided input text and options, which applies the normalization based on the user's preferences.
+
+    After the text is optimized, the result is rendered and displayed on the optimize page.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A response rendering the optimize template with the optimized text or the original text if it's a GET request.
+    """
     if request.method == 'POST':
         # Extract form data from POST request
         input_text = request.POST.get('input', '')
@@ -97,6 +167,19 @@ def OptimizePage(request):
 
 
 def HistoryPage(request):
+    """
+    This view retrieves and displays the user's history of mistakes.
+
+    The view first checks if the user is authenticated. If not, they are redirected to the login page.
+    If the user is authenticated, their history of mistakes (from the previous optimization sessions) is fetched using the `fetch_user_history` function.
+    The mistakes are then rendered on the history page for the user to review.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A response rendering the history page with the user's previous mistakes.
+    """
     if not request.user.is_authenticated:
         return redirect('group9:login')  # Redirect to login if the user is not authenticated
 
