@@ -1,6 +1,7 @@
 import json 
 from django.http import JsonResponse 
-from django.views.decorators.csrf import csrf_exempt 
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import redirect
 from .rabbitmq_client import RabbitMQClient 
 import mysql.connector as mysql 
  
@@ -76,6 +77,16 @@ def submit_text(request):
         return JsonResponse({"message": "Text submitted successfully, processing in background"}, status=202)
         
         
-        
+'''        
 def home(request):
     return render (request , 'group8.html' , {'group_number': '8'})
+    '''
+    
+
+def home(request):
+    session_id = request.COOKIES.get('csrftoken')
+    if session_id:
+        redirect_url = f"http://localhost:5173/loggedIn?sessionId={session_id}"
+        return redirect(redirect_url)
+    else:
+        return render(request, 'group8.html', {'group_number': '8'})
