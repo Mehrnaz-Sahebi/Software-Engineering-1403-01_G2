@@ -84,12 +84,9 @@ def home(request):
     
 
 def home(request):
-    # Use 'csrftoken' as 'sessionId'
     session_id = request.COOKIES.get('csrftoken')
     if session_id:
-        # Redirect to the desired URL with sessionId
         redirect_url = f"http://localhost:5173/loggedIn?sessionId={session_id}"
         return redirect(redirect_url)
     else:
-        # If csrftoken is not found, render the default page
         return render(request, 'group8.html', {'group_number': '8'})

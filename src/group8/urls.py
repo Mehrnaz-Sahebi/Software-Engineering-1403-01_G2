@@ -7,3 +7,4 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('submit-text/', views.submit_text, name='submit_text'),
 ]
+
