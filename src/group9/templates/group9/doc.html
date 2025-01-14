@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Python Code Functions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        h2 {
+            color: #16a085;
+        }
+        .code-block {
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        .function-description {
+            margin-bottom: 10px;
+        }
+        .function-name {
+            font-weight: bold;
+        }
+        .parameters {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Function Documentation</h1>
+
+    <h2>1. home(request)</h2>
+    <p class="function-description">
+        Renders the homepage of the application.
+    </p>
+    <div class="code-block">
+        <pre>
+def home(request):
+    return render(request, 'group9.html', {'group_number': '9'})
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> request (HTTP Request object)</p>
+    <p>Returns the rendered template 'group9.html'. This page includes the group number '9' in the context.</p>
+
+    <h2>2. SignupPage(request)</h2>
+    <p class="function-description">
+        Handles the user signup process by validating input and creating a new user in the database.
+    </p>
+    <div class="code-block">
+        <pre>
+def SignupPage(request):
+    if request.method == 'POST':
+        # Extract data from POST request
+        ...
+    return render(request, 'group9/signup.html')
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> request (HTTP Request object)</p>
+    <p>
+        This function is responsible for handling the user registration. It accepts data such as username, password, and other details. 
+        The data is validated and saved in the database. If successful, the user is redirected to the login page.
+    </p>
+
+    <h2>3. LoginPage(request)</h2>
+    <p class="function-description">
+        Authenticates the user based on the provided credentials (username and password).
+    </p>
+    <div class="code-block">
+        <pre>
+def LoginPage(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        pass1 = request.POST.get('pass')
+        ...
+    return render(request, 'group9/login.html')
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> request (HTTP Request object)</p>
+    <p>
+        Handles the login process, checking if the user credentials (username and password) are correct. If successful, the user is logged in
+        and redirected to the optimize page; otherwise, an error message is displayed.
+    </p>
+
+    <h2>4. LogoutPage(request)</h2>
+    <p class="function-description">
+        Logs the user out and redirects to the login page.
+    </p>
+    <div class="code-block">
+        <pre>
+def LogoutPage(request):
+    logout(request)
+    return redirect('group9:login')
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> request (HTTP Request object)</p>
+    <p>
+        Logs the user out and redirects them to the login page.
+    </p>
+
+    <h2>5. OptimizePage(request)</h2>
+    <p class="function-description">
+        Handles text optimization by applying various normalizations such as spacing correction, special characters removal, and more.
+    </p>
+    <div class="code-block">
+        <pre>
+def OptimizePage(request):
+    if request.method == 'POST':
+        input_text = request.POST.get('input', '')
+        ...
+    return render(request, 'group9/optimize.html', {'optimized_text': optimized_text, 'input_text': input_text})
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> request (HTTP Request object)</p>
+    <p>
+        This function processes the user's text input and applies various optimization techniques like fixing spacing, removing diacritics, 
+        and other user-defined settings. It also logs mistakes and saves the optimized text in the database.
+    </p>
+
+    <h2>6. HistoryPage(request)</h2>
+    <p class="function-description">
+        Displays a history of text optimization and mistakes made by the user.
+    </p>
+    <div class="code-block">
+        <pre>
+def HistoryPage(request):
+    if not request.user.is_authenticated:
+        return redirect('group9:login')
+    ...
+    return render(request, 'group9/history.html', {'mistakes': user_history})
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> request (HTTP Request object)</p>
+    <p>
+        This function retrieves the user's text optimization history from the database and displays any mistakes made during the optimization process.
+    </p>
+
+    <h2>7. find_out_mistakes(normalizing_function, text_before_change, text_after_change, text_id, username, mistake_type, db_connection)</h2>
+    <p class="function-description">
+        Detects mistakes in the text based on a specified normalizing function and saves them in the database.
+    </p>
+    <div class="code-block">
+        <pre>
+def find_out_mistakes(normalizing_function: callable, text_before_change: str, text_after_change: str, text_id: int, username: str, mistake_type: str, db_connection):
+    ...
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> 
+        - normalizing_function (callable): A function that normalizes the text.  
+        - text_before_change (str): The original text before optimization.  
+        - text_after_change (str): The text after applying the normalizing function.  
+        - text_id (int): The ID of the text being processed.  
+        - username (str): The username of the person making the mistake.  
+        - mistake_type (str): The type of mistake detected.  
+        - db_connection: Database connection object for saving mistakes.
+    </p>
+    <p>
+        This function applies a normalizing function to detect any changes in the text and saves any mistakes (if the text was modified).
+    </p>
+
+    <h2>8. optimize_text(input, user, correct_spacing, remove_diacrities, remove_special_chars, decrease_repeated_chars, persian_style, persian_number, unicodes_replacement, seperate_mi, db_connection)</h2>
+    <p class="function-description">
+        Applies a series of optimization techniques to the input text based on user preferences and returns the optimized result.
+    </p>
+    <div class="code-block">
+        <pre>
+def optimize_text(input: str, user: User, correct_spacing: bool, remove_diacrities: bool, remove_special_chars: bool, decrease_repeated_chars: bool, persian_style: bool, persian_number: bool, unicodes_replacement: bool, seperate_mi: bool, db_connection):
+    ...
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> 
+        - input (str): The input text to optimize.  
+        - user (User): The user performing the optimization.  
+        - correct_spacing, remove_diacrities, remove_special_chars, decrease_repeated_chars, persian_style, persian_number, unicodes_replacement, seperate_mi (bool): Settings for each optimization technique.  
+        - db_connection: Database connection object.
+    </p>
+    <p>
+        This function applies various optimizations (like correcting spacing, removing diacritics, etc.) to the input text. It checks for duplicate text inputs, saves the optimized text to the database, and logs any mistakes.
+    </p>
+
+    <h2>9. fetch_user_history(user, db_connection)</h2>
+    <p class="function-description">
+        Fetches the optimization history and mistakes made by a user.
+    </p>
+    <div class="code-block">
+        <pre>
+def fetch_user_history(user, db_connection):
+    userID = get_user_id_by_username(db_connection, user)
+    ...
+    return user_history
+        </pre>
+    </div>
+    <p class="parameters"><strong>Parameters:</strong> 
+        - user (str): The username of the user whose history is being retrieved.  
+        - db_connection: Database connection object.
+    </p>
+    <p>
+        This function fetches a user's optimization history, including any mistakes made and the corresponding corrections.
+    </p>
+
+    <!-- Add similar sections for other functions -->
+
+</body>
+</html>
