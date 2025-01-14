@@ -48,11 +48,11 @@ func loadDataFromCSV(filePath string, trie *Trie) error {
 		} else {
 			for _, match := range matches {
 				meaningsRaw := strings.Split(match[1], "&")
-				for _, meaning := range strings.Split(meaningsRaw[0], ",") {
+				for _, meaning := range strings.Split(meaningsRaw[0], "،") {
 					meanings = append(meanings, meaning)
 				}
 				if len(meaningsRaw) > 1 {
-					for _, antonym := range strings.Split(meaningsRaw[1], ",") {
+					for _, antonym := range strings.Split(meaningsRaw[1], "،") {
 						antonyms = append(antonyms, antonym)
 					}
 				}
