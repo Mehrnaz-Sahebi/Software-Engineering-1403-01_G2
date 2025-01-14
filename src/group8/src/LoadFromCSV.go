@@ -143,13 +143,13 @@ func loadData() {
 		if serErr == nil {
 			_ = os.WriteFile("trie_data.json", data, 0644)
 		}
-		csvErr2 := loadDataFromCSV1("words2.csv", globalTrie)
-		if csvErr2 != nil && !errors.Is(csvErr, os.ErrNotExist) {
-			fmt.Println("Warning: Failed to load CSV (words.csv) -", csvErr)
-		}
-		data2, serErr2 := globalTrie.Serialize()
-		if serErr2 == nil {
-			_ = os.WriteFile("trie_data.json", data2, 0644)
-		}
+		// csvErr2 := loadDataFromCSV1("words2.csv", globalTrie)
+		// if csvErr2 != nil && !errors.Is(csvErr, os.ErrNotExist) {
+		// 	fmt.Println("Warning: Failed to load CSV (words.csv) -", csvErr)
+		// }
+		// data2, serErr2 := globalTrie.Serialize()
+		// if serErr2 == nil {
+		// 	_ = os.WriteFile("trie_data.json", data2, 0644)
+		// }
 	}
 }
