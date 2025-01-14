@@ -74,7 +74,7 @@ const SuggestionBox: React.FC = () => {
 
             setPosition({
                 top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + enterPosition * 10,
-                left: hiddenDiv.scrollWidth - 280 - cursorPos ,
+                left: hiddenDiv.scrollWidth - 280 - cursorPos * 5,
             });
 
             document.body.removeChild(hiddenDiv);
@@ -86,7 +86,7 @@ const SuggestionBox: React.FC = () => {
             setInputValue((prev) => prev.slice(0, -1));
         } if (key === "\n") {
             setInputValue((prev) => prev + key);
-            setEnterPosition(() => enterPosition + 1);
+            setEnterPosition((prevState) => prevState + 1);
         } else {
             setInputValue((prev) => prev + key);
         }
