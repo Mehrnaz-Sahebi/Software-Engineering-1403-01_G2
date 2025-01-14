@@ -1,4 +1,3 @@
-import threading
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -10,26 +9,6 @@ from database.query import create_db_connection, save_user
 from database.secret import DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 
 # Create your views here.
-
-connection_lock = threading.Lock()
-
-GLOBAL_DB_CONNECTION = None
-
-
-def get_global_db_connection():
-    global GLOBAL_DB_CONNECTION
-
-    with connection_lock:
-        if GLOBAL_DB_CONNECTION is None:
-            try:
-                GLOBAL_DB_CONNECTION = create_db_connection(
-                    DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
-                )
-            except Exception as e:
-                print(f"Failed to reconnect to the database: {e}")
-                raise
-
-    return GLOBAL_DB_CONNECTION
 
 
 @api_view(["POST"])
@@ -49,7 +28,8 @@ def learn_api(request):
     if not tokens or not isinstance(tokens, list):
         return JsonResponse({"error": "invalid tokens."}, status=400)
 
-    cursor = get_global_db_connection().cursor()
+    mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+    cursor = mydb.cursor()
 
     try:
         cursor.execute("""
@@ -95,7 +75,7 @@ def learn_api(request):
                     (username, past_word, current_word),
                 )
 
-        get_global_db_connection().commit()
+        mydb.commit()
 
     except Exception as e:
         return JsonResponse(
@@ -103,8 +83,8 @@ def learn_api(request):
             status=500,
         )
     finally:
-        if cursor:
-            cursor.close()
+        cursor.close()
+        mydb.close()
 
     return JsonResponse({"message": "learn data updated successfully."}, status=200)
 
@@ -128,7 +108,8 @@ def suggest_api(request):
 
     suggestions = []
 
-    cursor = get_global_db_connection().cursor()
+    mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+    cursor = mydb.cursor()
 
     try:
         cursor.execute(
@@ -177,8 +158,8 @@ def suggest_api(request):
             status=500,
         )
     finally:
-        if cursor:
-            cursor.close()
+        mydb.close()
+        cursor.close()
 
     return JsonResponse({"suggestions": suggestions})
 
@@ -212,8 +193,10 @@ def signup_api(request):
     if User.objects.filter(username=uname).exists():
         return JsonResponse({"error": "username already exists."}, status=400)
 
+    mydb = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+
     try:
-        save_user(get_global_db_connection(), name, uname, pass1, email, age)
+        save_user(mydb, name, uname, pass1, email, age)
 
         my_user = User.objects.create_user(username=uname, email=email, password=pass1)
         my_user.save()
@@ -223,6 +206,8 @@ def signup_api(request):
             {"error": "registration failed.", "details": str(e)},
             status=500,
         )
+    finally:
+        mydb.close()
 
     return JsonResponse({"message": "registered successfully."}, status=201)
 
