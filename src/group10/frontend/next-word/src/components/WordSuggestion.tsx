@@ -11,7 +11,7 @@ const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
-    const [curPosition, setCurPosition] = useState<{ top: number; left: number } | null>(null);
+    const [enterPosition, setEnterPosition] = useState<number>(0);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
@@ -32,13 +32,6 @@ const SuggestionBox: React.FC = () => {
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
-
-        // Calculate cursor position
-        const caretSpan = document.createElement("span");
-        caretSpan.textContent = "|";
-        const top = caretSpan.scrollTop;
-        const left = caretSpan.scrollLeft;
-        setCurPosition({top, left});
 
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
@@ -77,12 +70,11 @@ const SuggestionBox: React.FC = () => {
 
             document.body.appendChild(hiddenDiv);
 
-            // const caretRect = caretSpan.getBoundingClientRect();
-            // const textareaRect = textarea.getBoundingClientRect();
+            const cursorPos = textarea.selectionStart;
 
             setPosition({
-                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + (curPosition ? curPosition.top : 0),
-                left: hiddenDiv.scrollWidth - 350 - (curPosition ? curPosition.left : 0),
+                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + enterPosition,
+                left: hiddenDiv.scrollWidth - 280 - cursorPos ,
             });
 
             document.body.removeChild(hiddenDiv);
@@ -92,15 +84,12 @@ const SuggestionBox: React.FC = () => {
     const handleKeyPress = (key: string) => {
         if (key === "Backspace") {
             setInputValue((prev) => prev.slice(0, -1));
+        } if (key === "\n") {
+            setInputValue((prev) => prev + key);
+            setEnterPosition(() => enterPosition + 1);
         } else {
             setInputValue((prev) => prev + key);
         }
-        // Calculate cursor position
-        const caretSpan = document.createElement("span");
-        caretSpan.textContent = "|";
-        const top = caretSpan.scrollTop;
-        const left = caretSpan.scrollLeft;
-        setCurPosition({top, left});
     };
 
     const toggleKeyboard = () => {
