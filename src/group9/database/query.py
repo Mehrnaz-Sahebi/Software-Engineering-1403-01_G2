@@ -3,9 +3,9 @@ from datetime import date
 from registration.database.secret import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 from registration.database.query import *
 import mysql.connector as mysql
+from mysql.connector import connect, Error
 
 
-# Function to save a text optimization record
 def save_text(mydb, username, input_text, optimized_text):
     """
     Saves the input and optimized text to the database, linking it to the user by username.
@@ -34,7 +34,7 @@ def save_text(mydb, username, input_text, optimized_text):
         cursor.execute(query, (user_id, input_text, optimized_text, date.today()))
         mydb.commit()
         print("Text saved successfully.")
-        return cursor.lastrowid  # Return the ID of the inserted record
+        return cursor.lastrowid
     except mysql.Error as e:
         print(f"Failed to insert text: {e}")
         return None
@@ -42,7 +42,6 @@ def save_text(mydb, username, input_text, optimized_text):
         cursor.close()
 
 
-# Function to fetch a text by ID
 def fetch_text_by_id(mydb, text_id):
     """
     Fetches a text record from the database by its ID.
@@ -54,7 +53,7 @@ def fetch_text_by_id(mydb, text_id):
     Returns:
     - dict: The text record as a dictionary with column names as keys, or None if an error occurs.
     """
-    cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for column names in the result
+    cursor = mydb.cursor(dictionary=True)
     query = "SELECT * FROM group9_text_optimization WHERE id = %s"
     try:
         cursor.execute(query, (text_id,))
@@ -104,7 +103,7 @@ def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today())
     Returns:
     - int: The ID of the text record if found, or None if no match is found.
     """
-    cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for more readable results
+    cursor = mydb.cursor(dictionary=True)
     query = """
     SELECT t.id
     FROM group9_text_optimization t
@@ -112,13 +111,12 @@ def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today())
     WHERE t.input_text = %s AND u.username = %s AND t.created_at = %s
     """
     try:
-        # Execute the query
         cursor.execute(query, (input_text, username, f"{date} 00:00:00"))
-        results = cursor.fetchall()  # Fetch all rows to avoid unread results        
+        results = cursor.fetchall()       
         if results:
-            return results[0]["id"]  # Return the text ID
+            return results[0]["id"]
         else:
-            return None  # No match found
+            return None
     except mysql.Error as e:
         print(f"Failed to fetch text ID: {e}")
         return None
@@ -127,36 +125,6 @@ def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today())
         cursor.close()
 
 
-# def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today()):
-#     """
-#     Retrieve the ID of a text optimization entry based on input text, username, and date.
-#     """
-#     cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for more readable results
-#     query = """
-#     SELECT t.id
-#     FROM group9_text_optimization t
-#     INNER JOIN users u ON t.user_id = u.id
-#     WHERE t.input_text = %s 
-#       AND u.username = %s 
-#     """
-#     try:
-#         # Execute the query
-#         cursor.execute(query, (input_text, username))
-#         results = cursor.fetchall()  # Fetch all rows to avoid unread results  
-#         print(results)
-#         print("*****")      
-#         if results:
-#             return results[0]["id"]  # Return the text ID
-#         else:
-#             return None  # No match found
-#     except mysql.Error as e:
-#         print(f"Failed to fetch text ID: {e}")
-#         return None
-#     finally:
-#         cursor.close()
-
-
-# Function to save a mistake
 def save_mistake(mydb, text_id, mistake_type, wrong_part, mistake_made_by_username, note, correct_form):
     """
     Saves a user's mistake in the database related to a specific text optimization.
@@ -197,7 +165,7 @@ def save_mistake(mydb, text_id, mistake_type, wrong_part, mistake_made_by_userna
     finally:
         cursor.close()
 
-# Function to fetch mistakes by text ID
+
 def fetch_mistakes_by_text(mydb, text_id):
     """
     Fetches all mistakes associated with a specific text optimization entry.
@@ -266,7 +234,7 @@ def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, da
     - dict: A dictionary containing the mistake details if found.
     - None: If no matching mistake is found or an error occurs.
     """
-    cursor = mydb.cursor(dictionary=True)  # Use dictionary=True for better readability of results
+    cursor = mydb.cursor(dictionary=True)
     query = """
     SELECT m.*
     FROM group9_mistake m
@@ -276,8 +244,7 @@ def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, da
     try:
         cursor.execute(query, (text_id, mistake_type, date, username))
         result = cursor.fetchone()
-        # print(result)
-        return result  # Return the mistake record if it exists
+        return result
     except mysql.Error as e:
         print(f"Failed to fetch mistake: {e}")
         return None
@@ -286,7 +253,6 @@ def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, da
 
 
 
-# Function to delete a text by ID
 def delete_text_by_id(mydb, text_id):
     """
     Deletes a text optimization entry by its ID from the 'group9_text_optimization' table.
@@ -318,7 +284,7 @@ def delete_text_by_id(mydb, text_id):
     finally:
         cursor.close()
 
-# Function to delete a mistake by ID
+
 def delete_mistake_by_id(mydb, mistake_id):
     """
     Deletes a mistake entry by its ID from the 'group9_mistake' table.
@@ -353,21 +319,6 @@ def delete_mistake_by_id(mydb, mistake_id):
     finally:
         cursor.close()
 
-
-
-# def get_user_history(db_connection, userID):
-#     query = """
-#     SELECT mistake_type, note, correct_form,created_at
-#     FROM group9_mistake
-#     WHERE user_id = %s
-#     ORDER BY created_at DESC
-#     """
-#     cursor = db_connection.cursor()
-#     cursor.execute(query, (userID,))
-#     results = cursor.fetchall()
-#     # print(results)
-#     cursor.close()
-#     return [{'type': row[0], 'details': row[1], 'correct_form': row[2],'Date:' : row[3]} for row in results]
 
 def get_user_history(db_connection, userID):
     """
@@ -414,9 +365,6 @@ def get_user_history(db_connection, userID):
     } for row in results]
 
 
-
-
-from mysql.connector import connect, Error
 def get_user_id_by_username(db_connection, username):
     """
     Fetches the user ID associated with a given username from the database.
@@ -439,9 +387,9 @@ def get_user_id_by_username(db_connection, username):
         cursor.close()
         
         if result:
-            return result[0]  # Return the user ID
+            return result[0]
         else:
-            return None  # Username not found
+            return None
     except Error as e:
         print(f"Database query error: {e}")
         return None

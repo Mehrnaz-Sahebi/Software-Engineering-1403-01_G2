@@ -87,9 +87,6 @@ def LoginPage(request):
         username=request.POST.get('username')
         pass1=request.POST.get('pass')
         user=authenticate(request,username=username,password=pass1)
-        # print(user.email)
-        # print(username)
-        # print(pass1)
         if user is not None:
             login(request,user)  
             return redirect('group9:optimize')
@@ -181,10 +178,9 @@ def HistoryPage(request):
     - A response rendering the history page with the user's previous mistakes.
     """
     if not request.user.is_authenticated:
-        return redirect('group9:login')  # Redirect to login if the user is not authenticated
+        return redirect('group9:login')
 
-    # print(f"Authenticated User: {request.user}")  # Debugging the user object
-    # print(f"User ID: {request.user.id}") 
+
     user =str( request.user.username)
     print(user)
     db_connection = create_db_connection(DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
@@ -192,6 +188,5 @@ def HistoryPage(request):
     # Fetch history using logic function
     user_history = fetch_user_history(user, db_connection)
     print(user_history)
-    # return render(request, 'group9/history.html', {'history': user_history})
     return render(request, 'group9/history.html', {'mistakes': user_history})
 

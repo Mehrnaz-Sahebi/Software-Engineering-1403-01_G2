@@ -1,7 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-
+from django.contrib.auth.models import User
+from group9.logic import optimize_text,fetch_user_history
+from django.test import TestCase
+from unittest.mock import MagicMock
 # Create your tests here.
 
 
@@ -50,12 +53,6 @@ class UserLoginTestCase(TestCase):
         response = self.client.post(reverse('group9:login'), {'username': 'testuser', 'pass': 'wrongpassword'})
         self.assertContains(response, "Username or Password is incorrect!!!")
 
-
-
-from django.contrib.auth.models import User
-from group9.logic import optimize_text,fetch_user_history
-from django.test import TestCase
-from unittest.mock import MagicMock
 
 
 class TextOptimizationTestCase(TestCase):
@@ -207,8 +204,6 @@ class TextOptimizationTestCase(TestCase):
             db_connection=self.mock_db_connection,
         )
         self.assertEqual(optimized_text, "نمی‌دانم چه می‌گفت")
-
-
 
 
 class UserHistoryTestCase(TestCase):

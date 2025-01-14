@@ -106,7 +106,6 @@ def optimize_text(input: str,
     """
     
     # checks if the current input text has been processed before (the exact same text in the same day by the same user)
-    # user.username = "m.sahebi22"
     does_input_exist = does_text_exist(db_connection, input, user.username)
     print(does_input_exist)
 
