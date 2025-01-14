@@ -32,6 +32,13 @@ const SuggestionBox: React.FC = () => {
         const value = e.target.value;
         setInputValue(value);
 
+        // Calculate cursor position
+        const caretSpan = document.createElement("span");
+        caretSpan.textContent = "|";
+        const top = caretSpan.scrollTop;
+        const left = caretSpan.scrollLeft;
+        setPosition({top, left});
+
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
             if (lastWord) {
@@ -69,17 +76,12 @@ const SuggestionBox: React.FC = () => {
 
             document.body.appendChild(hiddenDiv);
 
-            // Calculate cursor position
-            const caretSpan = document.createElement("span");
-            caretSpan.textContent = "|";
-            hiddenDiv.appendChild(caretSpan);
-
             // const caretRect = caretSpan.getBoundingClientRect();
             // const textareaRect = textarea.getBoundingClientRect();
 
             setPosition({
-                top: hiddenDiv.scrollTop + textarea.scrollTop + 50,
-                left: hiddenDiv.scrollWidth - 350,
+                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + (position ? position.top : 0),
+                left: hiddenDiv.scrollWidth - 350 - (position ? position.left : 0),
             });
 
             document.body.removeChild(hiddenDiv);
