@@ -8,28 +8,26 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var (
-	first  int = 0
-	second int = 0
-	third  int = 0
-)
+// Job holds both the text and the correlation ID.
+type Job struct {
+	Text          string
+	CorrelationID string
+}
+
+// Replace these with your chosen buffer sizes.
+var jobQueueWithID = make(chan Job, 100)
+var resultQueueWithID = make(chan []map[string]interface{}, 100)
 
 func search(word string) (map[string][]string, bool) {
 	meanings, found := globalTrie.Search(word)
-	fmt.Printf("first = %d    second = %d    third = %d  string = %s\n", first, second, third, word)
 	if found == true {
-		first++
 		meanings = SortStringMap(meanings, nil)
 		return meanings, true
 	}
-	//str, tranlated := finglishTranslator(word)
-	tranlated := false
-	str := ""
+	str, tranlated := finglishTranslator(word)
 	if tranlated == false {
-		second++
 		return nil, false
 	}
-	third++
 	return map[string][]string{
 		"meanings": {str},
 		"antonyms": {},
@@ -46,7 +44,6 @@ func processText(text string) []TokenMeaning {
 	// Prepare the result
 	var tokenMeanings []TokenMeaning
 	for _, token := range tokens {
-		fmt.Printf("word:: KIRRRRRRRRR  %s\n", token.Word)
 		// Use the token.Word field for Trie search
 		if meanings, found := search(token.Word); found {
 			tokenMeanings = append(tokenMeanings, TokenMeaning{
@@ -64,7 +61,9 @@ func runServer(conn *amqp.Connection) {
 		log.Fatalf("Failed to open a channel: %v", err)
 	}
 	defer ch.Close()
+
 	waitForQueue(ch)
+
 	msgs, err := ch.Consume(
 		"text_queue", // queue name
 		"",           // consumer tag
@@ -78,41 +77,74 @@ func runServer(conn *amqp.Connection) {
 		log.Fatalf("Failed to register a consumer: %v", err)
 	}
 
-	// Start worker pool with the initial number of workers
 	for i := 0; i < currentWorkers; i++ {
-		go worker(i)
+		go workerWithID(i)
 	}
 
-	// Adjust workers dynamically based on queue load
 	go adjustWorkers()
 
+	// Listen for processed results, publish them with correlation_id
 	go func() {
-		// Collect results and publish them back to RabbitMQ
-		for result := range resultQueue {
-			sendResultsToRabbitMQ(ch, result)
+		for results := range resultQueueWithID {
+			body, err := json.Marshal(results)
+			if err != nil {
+				log.Printf("Failed to marshal results: %v", err)
+				continue
+			}
+			corrID, _ := results[0]["correlation_id"].(string)
+			err = ch.Publish(
+				"",
+				"meanings_queue",
+				false,
+				false,
+				amqp.Publishing{
+					ContentType:   "application/json",
+					Body:          body,
+					CorrelationId: corrID,
+				},
+			)
+			if err != nil {
+				log.Printf("Failed to publish results: %v", err)
+			}
 		}
 	}()
 
-	// Collect messages and add them to the job queue
 	for d := range msgs {
 		wg.Add(1)
-		// wg2.Add(1)
-		go func() {
+		go func(d amqp.Delivery) {
+			defer wg.Done()
 			var message map[string]interface{}
-			err := json.Unmarshal(d.Body, &message)
-			if err != nil {
+			if err := json.Unmarshal(d.Body, &message); err != nil {
 				fmt.Println("Error unmarshaling JSON:", err)
-				wg.Done()
 				return
 			}
-			if text, ok := message["text"].(string); ok {
-				jobQueue <- text
-			} else {
+			text, ok := message["text"].(string)
+			if !ok {
 				fmt.Println("Key 'text' not found or not a string")
+				return
 			}
-			wg.Done()
-		}()
+			jobQueueWithID <- Job{
+				Text:          text,
+				CorrelationID: d.CorrelationId, // capture the AMQP correlation ID
+			}
+		}(d)
 	}
+
 	wg.Wait()
-	close(jobQueue)
+	close(jobQueueWithID)
+}
+
+// workerWithID consumes from jobQueueWithID, processes the text,
+// and sends back JSON that includes the same correlation_id.
+func workerWithID(id int) {
+	for job := range jobQueueWithID {
+		tokenMeanings := processText(job.Text)
+		response := []map[string]interface{}{
+			{
+				"correlation_id": job.CorrelationID,
+				"results":        tokenMeanings,
+			},
+		}
+		resultQueueWithID <- response
+	}
 }

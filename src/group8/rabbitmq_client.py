@@ -49,7 +49,7 @@ class RabbitMQClient:
                     response = json.loads(body)
                     print(f"Received response: {response}")
                     if response[0].get("correlation_id") == correlation_id:
-                        callback(response.get("results"))
+                        callback(response)
                         break
             except Exception as e:
                 callback(f"Error: {str(e)}")

@@ -1,12 +1,11 @@
-import json
-import time
+import json 
 from django.http import JsonResponse 
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
-from django.conf import settings
-from django.contrib.auth.models import User
 from .rabbitmq_client import RabbitMQClient 
-import mysql.connector as mysql 
+import mysql.connector as mysql
+import threading
+import queue
  
 # Database connection setup (for Django, make sure to use the provided connection function) 
 from database.query import get_user_id_by_username, get_posts_for_user 
@@ -55,36 +54,65 @@ def login(request):
  
 # Submit text view to handle user text submissions 
 @csrf_exempt 
-def submit_text(request): 
-    if request.method == 'POST': 
-        data = json.loads(request.body) 
+def submit_text(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
         text = data.get('text')
-
-        # Ensure the response data is globally accessible
-        response_data = None
-
-        def on_response(response): 
-            nonlocal response_data  # Use nonlocal to modify the outer variable
-            response_data = response
+        
+        # A thread-safe FIFO queue to hold the response from the callback
+        response_queue = queue.Queue()
+        
+        def on_response(response):
+            """
+            This function will be called by your RabbitMQ client once
+            the message has been received and processed from the queue.
+            """
+            # Because the "response" we get back (based on your logs) 
+            # looks like a list containing one dict, we can extract 
+            # 'results' if that’s the main data needed.
+            print(response)
+            if isinstance(response, list) and len(response) > 0:
+                # The structure of your logged response is:
+                # [
+                #   {
+                #       "correlation_id": "...",
+                #       "results": [...]
+                #   }
+                # ]
+                # So to get the "results", you'd do:
+                first_item = response[0]
+                results = first_item.get("results")
+                
+                print(results)
+                
+                response_queue.put({
+                    "correlation_id": first_item.get("correlation_id"),
+                    "results": results
+                })
+            else:
+                # If there's an error or different format
+                response_queue.put({"error": "Invalid response format", "raw": response})
 
         # Send the text to RabbitMQ for processing
-        rabbitmq_client.send_message(json.dumps({"text": text}, ensure_ascii=False), on_response)
+        rabbitmq_client.send_message(
+            json.dumps({"text": text}, ensure_ascii=False),
+            on_response
+        )
 
-        # Wait for the Go server's response before returning it
-        timeout = 10  # seconds
-        elapsed = 0
-        while response_data is None and elapsed < timeout:
-            time.sleep(0.1)
-            elapsed += 0.1
+        # ----
+        # Now we WAIT (block) until we get the result from the queue or timeout.
+        # ----
+        try:
+            final_response = response_queue.get(timeout=30)  # Wait up to 30 seconds
+        except queue.Empty:
+            return JsonResponse({"error": "Timeout waiting for response"}, status=504)
 
-        if response_data is not None:
-            # Return the JSON response from the Go server
-            return JsonResponse(response_data, safe=False, status=200)
-        else:
-            # Handle timeout or missing response
-            return JsonResponse({"error": "No response from Go server within the timeout period"}, status=504)
+        # If we got a valid response, send it to the user
+        return JsonResponse(final_response, status=200)
 
+    # For methods other than POST
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
         
         
 '''        
@@ -95,44 +123,8 @@ def home(request):
 
 def home(request):
     session_id = request.COOKIES.get('csrftoken')
-    print(settings.SESSION_COOKIE_NAME)
-    session_cookie_name = settings.SESSION_COOKIE_NAME
-    session_id = request.COOKIES.get(session_cookie_name)
-    print(session_id)
     if session_id:
         redirect_url = f"http://localhost:5173/loggedIn?sessionId={session_id}"
         return redirect(redirect_url)
     else:
         return render(request, 'group8.html', {'group_number': '8'})
-        
-@csrf_exempt 
-def submit_text(request): 
-    if request.method == 'POST': 
-        data = json.loads(request.body) 
-        text = data.get('text')
-
-        # Ensure the response data is globally accessible
-        response_data = None
-
-        def on_response(response): 
-            nonlocal response_data  # Use nonlocal to modify the outer variable
-            response_data = response
-
-        # Send the text to RabbitMQ for processing
-        rabbitmq_client.send_message(json.dumps({"text": text}, ensure_ascii=False), on_response)
-
-        # Wait for the Go server's response before returning it
-        timeout = 10  # seconds
-        elapsed = 0
-        while response_data is None and elapsed < timeout:
-            time.sleep(0.1)
-            elapsed += 0.1
-
-        if response_data is not None:
-            # Return the JSON response from the Go server
-            return JsonResponse(response_data, safe=False, status=200)
-        else:
-            # Handle timeout or missing response
-            return JsonResponse({"error": "No response from Go server within the timeout period"}, status=504)
-
-    return JsonResponse({"error": "Invalid request method"}, status=405)
