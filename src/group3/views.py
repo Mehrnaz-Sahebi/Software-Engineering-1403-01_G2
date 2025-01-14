@@ -1,5 +1,5 @@
 from django.shortcuts import render
-# from hazm import Normalizer
+from hazm import Normalizer
 from .models import TextOptimization
 from .logic import process_input
 from rest_framework.decorators import api_view
