@@ -32,7 +32,10 @@ const SuggestionBox: React.FC = () => {
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
-        setEnterPosition((prevState) => prevState + 1);
+
+        if (value === '\n') {
+            setEnterPosition((prevState) => prevState + 1);
+        }
 
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
@@ -75,7 +78,7 @@ const SuggestionBox: React.FC = () => {
 
             setPosition({
                 top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + enterPosition * 10,
-                left: hiddenDiv.scrollWidth - 280 - cursorPos * 5,
+                left: hiddenDiv.scrollWidth - 280 - cursorPos * 6,
             });
 
             document.body.removeChild(hiddenDiv);
@@ -85,7 +88,8 @@ const SuggestionBox: React.FC = () => {
     const handleKeyPress = (key: string) => {
         if (key === "Backspace") {
             setInputValue((prev) => prev.slice(0, -1));
-        } if (key === "\n") {
+        }
+        if (key === "\n") {
             setInputValue((prev) => prev + key);
             setEnterPosition((prevState) => prevState + 1);
         } else {
