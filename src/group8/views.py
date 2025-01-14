@@ -55,8 +55,8 @@ def login(request):
 def submit_text(request): 
     if request.method == 'GET': 
         session_id = request.COOKIES.get('csrftoken')
-        if not session_id:
-            return JsonResponse({"error": "User not authenticated"}, status=401)
+        #if not session_id:
+        #    return JsonResponse({"error": "User not authenticated"}, status=401)
         data = json.loads(request.body) 
         #user_id = data.get('user_id') 
         text = data.get('text') 
@@ -68,8 +68,8 @@ def submit_text(request):
         # posts = get_posts_for_user(db_connection, user_id) 
          
         # Send the post text to the Go server via RabbitMQ  
-        user_text = UserText(user_id=session_id, text=text)
-        user_text.save()
+        #user_text = UserText(user_id=session_id, text=text)
+        #user_text.save()
         rabbitmq_response = {}
 
             # Callback function to handle RabbitMQ response
