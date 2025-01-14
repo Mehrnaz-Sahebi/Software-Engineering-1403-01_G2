@@ -16,6 +16,7 @@ const LoginPage: React.FC = () => {
         );
 
         if (result) {
+            setUsername(username);
             window.location.href = "/group10/next-word.html";
         }
     };

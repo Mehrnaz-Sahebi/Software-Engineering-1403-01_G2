@@ -2,7 +2,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from django.shortcuts import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
@@ -18,35 +17,137 @@ GLOBAL_DB_CONNECTION = create_db_connection(
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def suggest_api(request):
-    past_word = request.data.get("past_word")
-    suggestions = []
+def learn_api(request):
+    tokens = request.data.get("tokens")
+    username = request.data.get("username")
 
-    if past_word:
+    if not tokens or not isinstance(tokens, list):
+        return JsonResponse({"error": "invalid tokens."}, status=400)
+
+    if not username:
+        return JsonResponse({"error": "username is required."}, status=400)
+
+    try:
         cursor = GLOBAL_DB_CONNECTION.cursor()
 
-        try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS G10_word_probabilities_user_customize (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username TEXT,
+                past_word TEXT,
+                current_word TEXT,
+                count INT DEFAULT 0
+            );
+        """)
+
+        for i in range(len(tokens) - 1):
+            past_word = tokens[i]
+            current_word = tokens[i + 1]
+
             cursor.execute(
                 """
-                SELECT current_word, probability
-                FROM G10_word_probabilities
-                WHERE past_word = %s
-                ORDER BY probability DESC
-                LIMIT 5;
-                """,
-                (past_word,),
+                SELECT count FROM G10_word_probabilities_user_customize
+                WHERE username = %s AND past_word = %s AND current_word = %s;
+            """,
+                (username, past_word, current_word),
             )
-            suggestions = cursor.fetchall()
-        except Exception:
-            return HttpResponse("Error fetching suggestions.", status=500)
-        finally:
-            cursor.close()
 
-    suggestions_data = [
-        {"current_word": word, "probability": prob} for word, prob in suggestions
-    ]
+            result = cursor.fetchone()
 
-    return JsonResponse({"suggestions": suggestions_data})
+            if result:
+                new_count = result[0] + 1
+                cursor.execute(
+                    """
+                    UPDATE G10_word_probabilities_user_customize
+                    SET count = %s
+                    WHERE username = %s AND past_word = %s AND current_word = %s;
+                """,
+                    (new_count, username, past_word, current_word),
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO G10_word_probabilities_user_customize (username, past_word, current_word, count)
+                    VALUES (%s, %s, %s, 1);
+                """,
+                    (username, past_word, current_word),
+                )
+
+        GLOBAL_DB_CONNECTION.commit()
+
+    except Exception as e:
+        return JsonResponse(
+            {"error": "learning failed.", "details": str(e)},
+            status=500,
+        )
+    finally:
+        cursor.close()
+
+    return JsonResponse({"message": "learn data updated successfully."}, status=200)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def suggest_api(request):
+    past_word = request.data.get("past_word")
+    username = request.data.get("username")
+    suggestions = []
+
+    if not all([past_word, username]):
+        return JsonResponse({"error": "all fields are required."}, status=400)
+
+    try:
+        cursor = GLOBAL_DB_CONNECTION.cursor()
+
+        cursor.execute(
+            """
+            SELECT current_word
+            FROM G10_word_probabilities_improve_parsivar
+            WHERE past_word = %s
+            ORDER BY probability DESC
+            LIMIT 3;
+            """,
+            (past_word,),
+        )
+
+        global_suggestions = [row[0] for row in cursor.fetchall()]
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS G10_word_probabilities_user_customize (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username TEXT,
+                past_word TEXT,
+                current_word TEXT,
+                count INT DEFAULT 0
+            );
+        """)
+
+        cursor.execute(
+            """
+            SELECT current_word
+            FROM G10_word_probabilities_user_customize
+            WHERE username = %s AND past_word = %s
+            ORDER BY count DESC
+            LIMIT 1;
+            """,
+            (
+                username,
+                past_word,
+            ),
+        )
+
+        user_suggestions = [row[0] for row in cursor.fetchall()]
+        suggestions = global_suggestions + user_suggestions
+
+    except Exception as e:
+        return JsonResponse(
+            {"error": "failed to fetch suggestions.", "details": str(e)},
+            status=500,
+        )
+    finally:
+        cursor.close()
+
+    return JsonResponse({"suggestions": suggestions})
 
 
 @api_view(["GET"])
@@ -65,13 +166,13 @@ def signup_api(request):
     age = request.data.get("age")
 
     if not all([uname, email, pass1, pass2, name, age]):
-        return JsonResponse({"error": "All fields are required."}, status=400)
+        return JsonResponse({"error": "all fields are required."}, status=400)
 
     if pass1 != pass2:
-        return JsonResponse({"error": "Passwords do not match."}, status=400)
+        return JsonResponse({"error": "passwords do not match."}, status=400)
 
     if User.objects.filter(username=uname).exists():
-        return JsonResponse({"error": "Username already exists."}, status=400)
+        return JsonResponse({"error": "username already exists."}, status=400)
 
     try:
         save_user(GLOBAL_DB_CONNECTION, name, uname, pass1, email, age)
@@ -81,37 +182,40 @@ def signup_api(request):
 
     except Exception as e:
         return JsonResponse(
-            {"error": "Registration failed.", "details": str(e)},
-            status=403,
+            {"error": "registration failed.", "details": str(e)},
+            status=500,
         )
 
-    return JsonResponse({"message": "Registered successfully."}, status=201)
+    return JsonResponse({"message": "registered successfully."}, status=201)
 
 
 @api_view(["POST"])
 def login_api(request):
     if request.content_type != "application/json":
         return JsonResponse(
-            {"error": "Invalid content type. Expected application/json."}, status=400
+            {"error": "invalid content type. expected application/json."}, status=400
         )
 
     username = request.data.get("username")
     pass1 = request.data.get("pass")
 
-    if not all([username, pass1]):
-        return JsonResponse({"error": "All fields are required."}, status=400)
+    if not username:
+        return JsonResponse({"error": "username is required."}, status=400)
+
+    if not pass1:
+        return JsonResponse({"error": "password is required."}, status=400)
 
     user = authenticate(request, username=username, password=pass1)
     if user is None:
-        return JsonResponse({"error": "Username or password is incorrect."}, status=403)
+        return JsonResponse({"error": "username or password is incorrect."}, status=403)
 
     login(request, user)
 
-    return JsonResponse({"message": "Logged in successfully."}, status=200)
+    return JsonResponse({"message": "logged in successfully."}, status=200)
 
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def logout_api(request):
     logout(request)
-    return JsonResponse({"message": "Logged out successfully."}, status=200)
+    return JsonResponse({"message": "logged out successfully."}, status=200)

@@ -10,7 +10,7 @@ export async function fetchSuggestions(lastWord: string): Promise<string[]> {
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken,
             },
-            body: JSON.stringify({ past_word: lastWord }),
+            body: JSON.stringify({ last_word: lastWord }),
         });
 
         if (!response.ok) {
