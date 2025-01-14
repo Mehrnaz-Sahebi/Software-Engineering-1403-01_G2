@@ -1,10 +1,10 @@
 'use client';
 
-import React, {useState, useRef, useEffect} from "react";
-import {fetchSuggestions} from "@/app/api/suggest";
+import React, { useState, useRef, useEffect } from "react";
+import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
-import {sendWordsToLearn} from "@/app/api/learn";
-import {logout} from "@/app/api/logout";
+import { sendWordsToLearn } from "@/app/api/learn";
+import { logout } from "@/app/api/logout";
 
 const SuggestionBox: React.FC = () => {
     const [username, setUsername] = useState("");
@@ -54,7 +54,7 @@ const SuggestionBox: React.FC = () => {
     const handleKeyUp = () => {
         if (textAreaRef.current) {
             const textarea = textAreaRef.current;
-            const {selectionStart} = textarea;
+            const { selectionStart } = textarea;
 
             const hiddenDiv = document.createElement("div");
             const style = getComputedStyle(textarea);
@@ -116,17 +116,7 @@ const SuggestionBox: React.FC = () => {
     const handleSuggestionClick = (suggestion: string) => {
         const words = inputValue.split(/(\s+)/);
 
-        let lastWordIndex = words.length - 1;
-
-        while (lastWordIndex >= 0 && words[lastWordIndex].trim() === "") {
-            lastWordIndex--;
-        }
-
-        if (lastWordIndex >= 0) {
-            words[lastWordIndex] = suggestion;
-        } else {
-            words.push(suggestion);
-        }
+        words.push(" " + suggestion);
 
         const newValue = words.join("");
         setInputValue(newValue + " ");
@@ -187,7 +177,7 @@ const SuggestionBox: React.FC = () => {
                 <button
                     onClick={toggleAutoSuggest}
                     className={`mx-1 px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none ${autoSuggest ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-500 text-white hover:bg-gray-600"
-                    }`}
+                        }`}
                 >
                     {autoSuggest ? "Auto Suggest On" : "Auto Suggest Off"}
                 </button>
@@ -230,7 +220,7 @@ const SuggestionBox: React.FC = () => {
                         <li
                             key={index}
                             className={`px-4 py-2 cursor-pointer ${activeIndex === index ? "bg-blue-100" : "hover:bg-blue-50"
-                            }`}
+                                }`}
                             onClick={() => handleSuggestionClick(suggestion)}
                         >
                             {suggestion}
@@ -238,7 +228,7 @@ const SuggestionBox: React.FC = () => {
                     ))}
                 </ul>
             )}
-            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard}/>}
+            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard} />}
         </div>
     );
 };
