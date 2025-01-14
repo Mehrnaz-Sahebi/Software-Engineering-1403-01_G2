@@ -32,6 +32,7 @@ const SuggestionBox: React.FC = () => {
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
+        setEnterPosition((prevState) => prevState + 1);
 
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
