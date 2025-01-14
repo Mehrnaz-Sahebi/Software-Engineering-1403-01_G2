@@ -56,6 +56,7 @@ func loadDataFromCSV(filePath string, trie *Trie) error {
 						antonyms = append(antonyms, antonym)
 					}
 				}
+				
 			}
 		}
 
@@ -69,6 +70,58 @@ func loadDataFromCSV(filePath string, trie *Trie) error {
 
 	return nil
 }
+func loadDataFromCSV1(filePath string, trie *Trie) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+	  return err
+	}
+	defer file.Close()
+  
+	reader := csv.NewReader(file)
+	_, err = reader.Read() // Skip the header row
+	if err != nil {
+	  return err
+	}
+  
+	for {
+	  record, err := reader.Read()
+	  if err == io.EOF {
+		break
+	  }
+	  if err != nil {
+		return err
+	  }
+  
+	  if len(record) < 3 {
+		continue
+	  }
+  
+	  word := strings.TrimSpace(record[1])
+	  detail := strings.TrimSpace(record[2])
+  
+	  // Split detail into individual meanings
+	  meanings := []string{}
+	  for _, part := range strings.Split(detail, ".") { // Split by period
+		parts := strings.Split(part, "،") // Split by comma
+		for _, meaning := range parts {
+		  meaning = strings.TrimSpace(meaning)
+		  if meaning != "" {
+			meanings = append(meanings, meaning)
+		  }
+		}
+	  }
+  
+	  // Prepare the metadata
+	  metadata := map[string][]string{
+		"meanings": meanings,
+	  }
+  
+	  // Insert into trie
+	  trie.Insert(word, metadata)
+	}
+  
+	return nil
+  }
 
 func loadData() {
 	if _, err := os.Stat("trie_data.json"); err == nil {
@@ -89,6 +142,14 @@ func loadData() {
 		data, serErr := globalTrie.Serialize()
 		if serErr == nil {
 			_ = os.WriteFile("trie_data.json", data, 0644)
+		}
+		csvErr2 := loadDataFromCSV1("words2.csv", globalTrie)
+		if csvErr2 != nil && !errors.Is(csvErr, os.ErrNotExist) {
+			fmt.Println("Warning: Failed to load CSV (words.csv) -", csvErr)
+		}
+		data2, serErr2 := globalTrie.Serialize()
+		if serErr2 == nil {
+			_ = os.WriteFile("trie_data.json", data2, 0644)
 		}
 	}
 }
