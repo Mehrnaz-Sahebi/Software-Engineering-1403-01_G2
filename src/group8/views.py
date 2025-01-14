@@ -53,28 +53,41 @@ def login(request):
 # Submit text view to handle user text submissions 
 @csrf_exempt 
 def submit_text(request): 
-    if request.method == 'POST': 
+    if request.method == 'GET': 
+        session_id = request.COOKIES.get('csrftoken')
+        if not session_id:
+            return JsonResponse({"error": "User not authenticated"}, status=401)
         data = json.loads(request.body) 
         #user_id = data.get('user_id') 
         text = data.get('text') 
- 
+        if not text:
+            return JsonResponse({"error": "Text is required"}, status=400)
         # db_connection = get_db_connection() 
          
         # Get posts for user (could also use the search function if needed) 
         # posts = get_posts_for_user(db_connection, user_id) 
          
         # Send the post text to the Go server via RabbitMQ  
+        user_text = UserText(user_id=session_id, text=text)
+        user_text.save()
+        rabbitmq_response = {}
 
-        def on_response(response): 
-            global response_data 
-            response_data = response 
-            print(response_data) 
+            # Callback function to handle RabbitMQ response
+        def on_response(response):
+            nonlocal rabbitmq_response
+            rabbitmq_response = json.loads(response)
  
         # Send text and posts to RabbitMQ for processing 
         #rabbitmq_client.send_message(json.dumps({"text": text, "posts": posts, "user_id": user_id}), on_response) 
-        rabbitmq_client.send_message(json.dumps({"text": text}, ensure_ascii=False), on_response) 
-        # Return an initial response while processing happens in the background 
-        return JsonResponse({"message": "Text submitted successfully, processing in background"}, status=202)
+        rabbitmq_client.send_message(
+                json.dumps({"text": text}, ensure_ascii=False),
+                on_response=on_response
+            )
+        if not rabbitmq_response:
+                return JsonResponse({"message": "Processing delayed, no response from RabbitMQ yet"}, status=202)
+
+        return JsonResponse({"rabbitmq_response": rabbitmq_response}, status=200)
+
         
         
 '''        
