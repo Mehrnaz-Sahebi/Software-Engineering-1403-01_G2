@@ -64,6 +64,7 @@ def fetch_text_by_id(mydb, text_id):
     finally:
         cursor.close()
 
+
 def does_text_exist(mydb, input, username, date=date.today()):
     """
     Checks if a given text has been optimized by the user on a particular date.
@@ -79,7 +80,7 @@ def does_text_exist(mydb, input, username, date=date.today()):
 
     Returns:
     - bool: True if the text exists, False if not.
-    
+
     Example:
     - does_text_exist(mydb, 'sample text', 'john_doe')
     """
@@ -112,7 +113,7 @@ def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today())
     """
     try:
         cursor.execute(query, (input_text, username, f"{date} 00:00:00"))
-        results = cursor.fetchall()       
+        results = cursor.fetchall()
         if results:
             return results[0]["id"]
         else:
@@ -125,7 +126,15 @@ def get_text_id_by_input_and_date(mydb, input_text, username, date=date.today())
         cursor.close()
 
 
-def save_mistake(mydb, text_id, mistake_type, wrong_part, mistake_made_by_username, note, correct_form):
+def save_mistake(
+    mydb,
+    text_id,
+    mistake_type,
+    wrong_part,
+    mistake_made_by_username,
+    note,
+    correct_form,
+):
     """
     Saves a user's mistake in the database related to a specific text optimization.
 
@@ -155,7 +164,18 @@ def save_mistake(mydb, text_id, mistake_type, wrong_part, mistake_made_by_userna
     VALUES (%s, %s, %s, %s, %s, %s, %s);
     """
     try:
-        cursor.execute(query, (text_id, mistake_type, wrong_part, user_id, note, date.today(), correct_form))
+        cursor.execute(
+            query,
+            (
+                text_id,
+                mistake_type,
+                wrong_part,
+                user_id,
+                note,
+                date.today(),
+                correct_form,
+            ),
+        )
         mydb.commit()
         print("Mistake saved successfully.")
         return cursor.lastrowid
@@ -170,8 +190,8 @@ def fetch_mistakes_by_text(mydb, text_id):
     """
     Fetches all mistakes associated with a specific text optimization entry.
 
-    This function retrieves all recorded mistakes linked to a particular text optimization entry 
-    using the text ID. It returns a list of mistakes made for that text, including details such as 
+    This function retrieves all recorded mistakes linked to a particular text optimization entry
+    using the text ID. It returns a list of mistakes made for that text, including details such as
     the mistake type, incorrect part, and correction.
 
     Parameters:
@@ -193,11 +213,12 @@ def fetch_mistakes_by_text(mydb, text_id):
     finally:
         cursor.close()
 
+
 def does_mistake_exist(mydb, text_id, mistake_type, username, date=date.today()):
     """
     Checks if a mistake of a particular type has been logged for a specific text, user, and date.
 
-    This function helps determine whether a particular type of mistake has already been recorded 
+    This function helps determine whether a particular type of mistake has already been recorded
     for a specific user on a specific text for a given date.
 
     Parameters:
@@ -210,17 +231,22 @@ def does_mistake_exist(mydb, text_id, mistake_type, username, date=date.today())
     Returns:
     - bool: True if the mistake exists, False if not.
     """
-    if get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, date) == None:
+    if (
+        get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, date)
+        == None
+    ):
         return False
     return True
 
 
-def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, date=date.today()):
+def get_mistake_by_text_type_date_user(
+    mydb, text_id, mistake_type, username, date=date.today()
+):
     """
     Fetches a mistake record for a specific text, mistake type, user, and date.
 
-    This function is used to check if a particular mistake has already been logged for a 
-    specific text, mistake type, user, and date. It helps prevent duplicate mistake records 
+    This function is used to check if a particular mistake has already been logged for a
+    specific text, mistake type, user, and date. It helps prevent duplicate mistake records
     from being saved for the same mistake.
 
     Parameters:
@@ -250,7 +276,6 @@ def get_mistake_by_text_type_date_user(mydb, text_id, mistake_type, username, da
         return None
     finally:
         cursor.close()
-
 
 
 def delete_text_by_id(mydb, text_id):
@@ -356,13 +381,16 @@ def get_user_history(db_connection, userID):
     results = cursor.fetchall()
     cursor.close()
 
-    return [{
-        'type': row[1],
-        'details': row[2],
-        'correct_form': row[3],
-        'Date': row[4],
-        'input_text': row[0]
-    } for row in results]
+    return [
+        {
+            "type": row[1],
+            "details": row[2],
+            "correct_form": row[3],
+            "Date": row[4],
+            "input_text": row[0],
+        }
+        for row in results
+    ]
 
 
 def get_user_id_by_username(db_connection, username):
@@ -378,14 +406,14 @@ def get_user_id_by_username(db_connection, username):
     Returns:
     - int or None: The user ID if the username exists, or None if the username is not found.
     """
-    
+
     query = "SELECT id FROM users WHERE username = %s"
     try:
         cursor = db_connection.cursor()
         cursor.execute(query, (username,))
         result = cursor.fetchone()
         cursor.close()
-        
+
         if result:
             return result[0]
         else:
@@ -393,5 +421,3 @@ def get_user_id_by_username(db_connection, username):
     except Error as e:
         print(f"Database query error: {e}")
         return None
-
-

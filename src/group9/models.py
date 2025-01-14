@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class TextOptimization(models.Model):
     input_text = models.TextField()
     optimized_text = models.TextField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)  
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
