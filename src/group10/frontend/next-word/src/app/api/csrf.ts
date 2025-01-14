@@ -1,6 +1,6 @@
 export async function fetchCSRF(): Promise<string> {
     try {
-        const response = await fetch(`/group10/api/csrf/`, {
+        const response = await fetch("/group10/api/csrf/", {
             method: "GET",
         });
 

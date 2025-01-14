@@ -2,10 +2,9 @@
 import React, { useState } from "react";
 import LinkLabel from "@/components/LinkLabel";
 import FormRaw from "@/components/FormRaw";
-import { fetchCSRF } from "../api/csrf";
+import { performSignup } from "../api/signup";
 
 const SignupPage: React.FC = () => {
-
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password1, setPassword1] = useState("");
@@ -16,15 +15,8 @@ const SignupPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const csrfToken = await fetchCSRF()
-
-        const response = await fetch("/group10/api/signup/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-            },
-            body: JSON.stringify({
+        const result = await performSignup(
+            JSON.stringify({
                 username,
                 email,
                 password1,
@@ -32,16 +24,12 @@ const SignupPage: React.FC = () => {
                 name,
                 age,
             }),
-        });
+        );
 
-        if (response.ok) {
+        if (result) {
             window.location.href = "/group10/login.html";
-        } else {
-            console.log("Failed to signup.");
         }
     };
-
-
 
     return (
         <div>

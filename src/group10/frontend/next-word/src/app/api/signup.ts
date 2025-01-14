@@ -1,23 +1,26 @@
 import { fetchCSRF } from "./csrf";
 
-export  async function sendWordsToLearn(username: string, tokens: string[]): Promise<void> {
+export async function performSignup(body: string): Promise<boolean> {
     try {
         const csrfToken = await fetchCSRF()
 
-        const response = await fetch("/group10/api/learn/", {
+        const response = await fetch("/group10/api/signup/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken,
-                "credentials": "same-origin",
             },
-            body: JSON.stringify({ username, tokens }),
+            body: body,
         });
 
         if (!response.ok) {
             throw new Error(await response.text());
         }
+
+        return true;
     } catch (error) {
-        console.error("Failed to send words to learn:", error);
+        console.error("Failed to register:", error);
     }
-};
+
+    return false;
+}
