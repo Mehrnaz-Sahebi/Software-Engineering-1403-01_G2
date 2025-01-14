@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from "react";
-import { fetchSuggestions } from "@/app/api/suggest";
+import React, {useState, useRef, useEffect} from "react";
+import {fetchSuggestions} from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
-import { sendWordsToLearn } from "@/app/api/learn";
-import { logout } from "@/app/api/logout";
+import {sendWordsToLearn} from "@/app/api/learn";
+import {logout} from "@/app/api/logout";
 
 const SuggestionBox: React.FC = () => {
     const [username, setUsername] = useState("");
     const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
+    const [curPosition, setCurPosition] = useState<{ top: number; left: number } | null>(null);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
@@ -37,7 +38,7 @@ const SuggestionBox: React.FC = () => {
         caretSpan.textContent = "|";
         const top = caretSpan.scrollTop;
         const left = caretSpan.scrollLeft;
-        setPosition({top, left});
+        setCurPosition({top, left});
 
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
@@ -55,7 +56,7 @@ const SuggestionBox: React.FC = () => {
     const handleKeyUp = () => {
         if (textAreaRef.current) {
             const textarea = textAreaRef.current;
-            const { selectionStart } = textarea;
+            const {selectionStart} = textarea;
 
             // Create a hidden mirror div to calculate cursor position
             const hiddenDiv = document.createElement("div");
@@ -80,8 +81,8 @@ const SuggestionBox: React.FC = () => {
             // const textareaRect = textarea.getBoundingClientRect();
 
             setPosition({
-                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + (position ? position.top : 0),
-                left: hiddenDiv.scrollWidth - 350 - (position ? position.left : 0),
+                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + (curPosition ? curPosition.top : 0),
+                left: hiddenDiv.scrollWidth - 350 - (curPosition ? curPosition.left : 0),
             });
 
             document.body.removeChild(hiddenDiv);
@@ -94,6 +95,12 @@ const SuggestionBox: React.FC = () => {
         } else {
             setInputValue((prev) => prev + key);
         }
+        // Calculate cursor position
+        const caretSpan = document.createElement("span");
+        caretSpan.textContent = "|";
+        const top = caretSpan.scrollTop;
+        const left = caretSpan.scrollLeft;
+        setCurPosition({top, left});
     };
 
     const toggleKeyboard = () => {
@@ -180,7 +187,7 @@ const SuggestionBox: React.FC = () => {
                 <button
                     onClick={toggleAutoSuggest}
                     className={`mx-1 px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none ${autoSuggest ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-500 text-white hover:bg-gray-600"
-                        }`}
+                    }`}
                 >
                     {autoSuggest ? "Auto Suggest On" : "Auto Suggest Off"}
                 </button>
@@ -223,7 +230,7 @@ const SuggestionBox: React.FC = () => {
                         <li
                             key={index}
                             className={`px-4 py-2 cursor-pointer ${activeIndex === index ? "bg-blue-100" : "hover:bg-blue-50"
-                                }`}
+                            }`}
                             onClick={() => handleSuggestionClick(suggestion)}
                         >
                             {suggestion}
@@ -231,7 +238,7 @@ const SuggestionBox: React.FC = () => {
                     ))}
                 </ul>
             )}
-            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard} />}
+            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard}/>}
         </div>
     );
 };
