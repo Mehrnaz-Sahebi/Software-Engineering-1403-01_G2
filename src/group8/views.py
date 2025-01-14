@@ -1,7 +1,10 @@
-import json 
+import json
+import time
 from django.http import JsonResponse 
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
+from django.conf import settings
+from django.contrib.auth.models import User
 from .rabbitmq_client import RabbitMQClient 
 import mysql.connector as mysql 
  
@@ -55,26 +58,33 @@ def login(request):
 def submit_text(request): 
     if request.method == 'POST': 
         data = json.loads(request.body) 
-        #user_id = data.get('user_id') 
-        text = data.get('text') 
- 
-        # db_connection = get_db_connection() 
-         
-        # Get posts for user (could also use the search function if needed) 
-        # posts = get_posts_for_user(db_connection, user_id) 
-         
-        # Send the post text to the Go server via RabbitMQ  
+        text = data.get('text')
+
+        # Ensure the response data is globally accessible
+        response_data = None
 
         def on_response(response): 
-            global response_data 
-            response_data = response 
-            print(response_data) 
- 
-        # Send text and posts to RabbitMQ for processing 
-        #rabbitmq_client.send_message(json.dumps({"text": text, "posts": posts, "user_id": user_id}), on_response) 
-        rabbitmq_client.send_message(json.dumps({"text": text}, ensure_ascii=False), on_response) 
-        # Return an initial response while processing happens in the background 
-        return JsonResponse({"message": "Text submitted successfully, processing in background"}, status=202)
+            nonlocal response_data  # Use nonlocal to modify the outer variable
+            response_data = response
+
+        # Send the text to RabbitMQ for processing
+        rabbitmq_client.send_message(json.dumps({"text": text}, ensure_ascii=False), on_response)
+
+        # Wait for the Go server's response before returning it
+        timeout = 10  # seconds
+        elapsed = 0
+        while response_data is None and elapsed < timeout:
+            time.sleep(0.1)
+            elapsed += 0.1
+
+        if response_data is not None:
+            # Return the JSON response from the Go server
+            return JsonResponse(response_data, safe=False, status=200)
+        else:
+            # Handle timeout or missing response
+            return JsonResponse({"error": "No response from Go server within the timeout period"}, status=504)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
         
         
 '''        
@@ -85,8 +95,44 @@ def home(request):
 
 def home(request):
     session_id = request.COOKIES.get('csrftoken')
+    print(settings.SESSION_COOKIE_NAME)
+    session_cookie_name = settings.SESSION_COOKIE_NAME
+    session_id = request.COOKIES.get(session_cookie_name)
+    print(session_id)
     if session_id:
         redirect_url = f"http://localhost:5173/loggedIn?sessionId={session_id}"
         return redirect(redirect_url)
     else:
         return render(request, 'group8.html', {'group_number': '8'})
+        
+@csrf_exempt 
+def submit_text(request): 
+    if request.method == 'POST': 
+        data = json.loads(request.body) 
+        text = data.get('text')
+
+        # Ensure the response data is globally accessible
+        response_data = None
+
+        def on_response(response): 
+            nonlocal response_data  # Use nonlocal to modify the outer variable
+            response_data = response
+
+        # Send the text to RabbitMQ for processing
+        rabbitmq_client.send_message(json.dumps({"text": text}, ensure_ascii=False), on_response)
+
+        # Wait for the Go server's response before returning it
+        timeout = 10  # seconds
+        elapsed = 0
+        while response_data is None and elapsed < timeout:
+            time.sleep(0.1)
+            elapsed += 0.1
+
+        if response_data is not None:
+            # Return the JSON response from the Go server
+            return JsonResponse(response_data, safe=False, status=200)
+        else:
+            # Handle timeout or missing response
+            return JsonResponse({"error": "No response from Go server within the timeout period"}, status=504)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)

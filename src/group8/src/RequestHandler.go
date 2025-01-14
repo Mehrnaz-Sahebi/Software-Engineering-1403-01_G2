@@ -8,16 +8,28 @@ import (
 	"github.com/streadway/amqp"
 )
 
+var (
+	first  int = 0
+	second int = 0
+	third  int = 0
+)
+
 func search(word string) (map[string][]string, bool) {
 	meanings, found := globalTrie.Search(word)
+	fmt.Printf("first = %d    second = %d    third = %d  string = %s\n", first, second, third, word)
 	if found == true {
+		first++
 		meanings = SortStringMap(meanings, nil)
 		return meanings, true
 	}
-	str, tranlated := finglishTranslator(word)
+	//str, tranlated := finglishTranslator(word)
+	tranlated := false
+	str := ""
 	if tranlated == false {
+		second++
 		return nil, false
 	}
+	third++
 	return map[string][]string{
 		"meanings": {str},
 		"antonyms": {},
@@ -34,6 +46,7 @@ func processText(text string) []TokenMeaning {
 	// Prepare the result
 	var tokenMeanings []TokenMeaning
 	for _, token := range tokens {
+		fmt.Printf("word:: KIRRRRRRRRR  %s\n", token.Word)
 		// Use the token.Word field for Trie search
 		if meanings, found := search(token.Word); found {
 			tokenMeanings = append(tokenMeanings, TokenMeaning{
