@@ -114,8 +114,21 @@ const SuggestionBox: React.FC = () => {
     };
 
     const handleSuggestionClick = (suggestion: string) => {
-        const words = inputValue.split(/\s+/);
-        const newValue = [...words, suggestion].join(" ");
+        const words = inputValue.split(/(\s+)/);
+
+        let lastWordIndex = words.length - 1;
+
+        while (lastWordIndex >= 0 && words[lastWordIndex].trim() === "") {
+            lastWordIndex--;
+        }
+
+        if (lastWordIndex >= 0) {
+            words[lastWordIndex] = suggestion;
+        } else {
+            words.push(suggestion);
+        }
+
+        const newValue = words.join("");
         setInputValue(newValue + " ");
         setSuggestions([]);
         setActiveIndex(null);
