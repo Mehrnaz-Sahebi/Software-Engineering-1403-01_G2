@@ -11,7 +11,6 @@ const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
-    const [enterPosition, setEnterPosition] = useState<number>(0);
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
@@ -32,10 +31,6 @@ const SuggestionBox: React.FC = () => {
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
-
-        if (value === '\n') {
-            setEnterPosition((prevState) => prevState + 1);
-        }
 
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
@@ -77,7 +72,7 @@ const SuggestionBox: React.FC = () => {
             const cursorPos = textarea.selectionStart;
 
             setPosition({
-                top: hiddenDiv.scrollTop + textarea.scrollTop + 50 + enterPosition * 10,
+                top: hiddenDiv.scrollTop + textarea.scrollTop + 50,
                 left: hiddenDiv.scrollWidth - 280 - cursorPos * 6,
             });
 
@@ -91,7 +86,6 @@ const SuggestionBox: React.FC = () => {
         }
         if (key === "\n") {
             setInputValue((prev) => prev + key);
-            setEnterPosition((prevState) => prevState + 1);
         } else {
             setInputValue((prev) => prev + key);
         }
