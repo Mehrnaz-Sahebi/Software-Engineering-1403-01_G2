@@ -14,11 +14,11 @@ const SuggestionBox: React.FC = () => {
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
-    const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-    // Load saved content when the component mounts and username is available
+    const textAreaRef = useRef<HTMLTextAreaElement & { typingTimeout?: NodeJS.Timeout } | null>(null);
+
     useEffect(() => {
-        setUsername(localStorage.getItem("username") || "")
+        setUsername(localStorage.getItem("username") || "");
 
         if (username) {
             const savedContent = localStorage.getItem(username);
@@ -28,20 +28,26 @@ const SuggestionBox: React.FC = () => {
         }
     }, [username]);
 
-    const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInputValue(value);
 
         if (autoSuggest) {
-            const lastWord = value.split(/\s+/).pop();
-            if (lastWord) {
-                const fetchedSuggestions = await fetchSuggestions(username, lastWord);
-                setSuggestions(fetchedSuggestions);
-                setActiveIndex(null);
-            } else {
-                setSuggestions([]);
-                setActiveIndex(null);
+            if (textAreaRef.current?.typingTimeout) {
+                clearTimeout(textAreaRef.current.typingTimeout);
             }
+
+            textAreaRef.current!.typingTimeout = setTimeout(async () => {
+                const lastWord = value.split(/\s+/).pop();
+                if (lastWord) {
+                    const fetchedSuggestions = await fetchSuggestions(username, lastWord);
+                    setSuggestions(fetchedSuggestions);
+                    setActiveIndex(null);
+                } else {
+                    setSuggestions([]);
+                    setActiveIndex(null);
+                }
+            }, 1000);
         }
     };
 
@@ -50,11 +56,9 @@ const SuggestionBox: React.FC = () => {
             const textarea = textAreaRef.current;
             const {selectionStart} = textarea;
 
-            // Create a hidden mirror div to calculate cursor position
             const hiddenDiv = document.createElement("div");
             const style = getComputedStyle(textarea);
 
-            // Copy textarea styles to the hidden div
             hiddenDiv.style.position = "absolute";
             hiddenDiv.style.visibility = "hidden";
             hiddenDiv.style.whiteSpace = "pre-wrap";
@@ -64,7 +68,6 @@ const SuggestionBox: React.FC = () => {
             hiddenDiv.style.lineHeight = style.lineHeight;
             hiddenDiv.style.width = `${textarea.clientWidth}px`;
 
-            // Add content up to the cursor
             hiddenDiv.textContent = textarea.value.substring(0, selectionStart).replace(/\n/g, "\u200B\n");
 
             document.body.appendChild(hiddenDiv);
@@ -83,9 +86,6 @@ const SuggestionBox: React.FC = () => {
     const handleKeyPress = (key: string) => {
         if (key === "Backspace") {
             setInputValue((prev) => prev.slice(0, -1));
-        }
-        if (key === "\n") {
-            setInputValue((prev) => prev + key);
         } else {
             setInputValue((prev) => prev + key);
         }
@@ -118,15 +118,15 @@ const SuggestionBox: React.FC = () => {
         const newValue = [...words, suggestion].join(" ");
         setInputValue(newValue + " ");
         setSuggestions([]);
-        setActiveIndex(null); // Reset active index
+        setActiveIndex(null);
     };
 
     const handleFetchSuggestionsManually = async () => {
-        const lastWord = inputValue.split(/\s+/).pop(); // Get the last word
+        const lastWord = inputValue.split(/\s+/).pop();
         if (lastWord) {
             const fetchedSuggestions = await fetchSuggestions(username, lastWord);
             setSuggestions(fetchedSuggestions);
-            setActiveIndex(null); // Reset active index
+            setActiveIndex(null);
         }
     };
 
@@ -145,7 +145,6 @@ const SuggestionBox: React.FC = () => {
 
     const handleLogout = async () => {
         try {
-            // Save content in localStorage before logout
             if (username) {
                 localStorage.setItem(username, inputValue);
             }
