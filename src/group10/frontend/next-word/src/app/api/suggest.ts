@@ -1,27 +1,28 @@
 import { fetchCSRF } from "./csrf";
 
-export async function fetchSuggestions(lastWord: string): Promise<string[]> {
+export async function fetchSuggestions(username: string, past_word: string): Promise<string[]> {
     try {
         const csrfToken = await fetchCSRF()
         
-        const response = await fetch(`/group10/api/suggest/`, {
+        const response = await fetch('/group10/api/suggest/', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken,
+                "credentials": "same-origin",
             },
-            body: JSON.stringify({ last_word: lastWord }),
+            body: JSON.stringify({ username, past_word }),
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch suggestions");
+            throw new Error(await response.text());
         }
 
         const data = await response.json();
 
-        console.log(data.words)
+        console.log(data.suggestions)
 
-        return data.words;
+        return data.suggestions;
     } catch (error) {
         console.error("Error fetching suggestions:", error);
         return [];

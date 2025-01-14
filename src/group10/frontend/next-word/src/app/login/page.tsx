@@ -11,12 +11,10 @@ const LoginPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const result = await performLogin(
-            JSON.stringify({ username, "pass": password }),
-        );
+        const result = await performLogin(username, password);
 
         if (result) {
-            setUsername(username);
+            localStorage.setItem("username", username);
             window.location.href = "/group10/next-word.html";
         }
     };

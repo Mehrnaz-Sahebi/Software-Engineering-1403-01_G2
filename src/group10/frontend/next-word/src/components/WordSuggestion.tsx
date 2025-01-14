@@ -5,9 +5,9 @@ import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
 import { sendWordsToLearn } from "@/app/api/learn";
 import { logout } from "@/app/api/logout";
-import { useUser } from "@/app/UserContext";
 
 const SuggestionBox: React.FC = () => {
+    const [username, setUsername] = useState("");
     const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
@@ -15,10 +15,11 @@ const SuggestionBox: React.FC = () => {
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-    const { username, setUsername } = useUser();
 
     // Load saved content when the component mounts and username is available
     useEffect(() => {
+        setUsername(localStorage.getItem("username") || "")
+
         if (username) {
             const savedContent = localStorage.getItem(username);
             if (savedContent) {
@@ -34,7 +35,7 @@ const SuggestionBox: React.FC = () => {
         if (autoSuggest) {
             const lastWord = value.split(/\s+/).pop();
             if (lastWord) {
-                const fetchedSuggestions = await fetchSuggestions(lastWord);
+                const fetchedSuggestions = await fetchSuggestions(username, lastWord);
                 setSuggestions(fetchedSuggestions);
                 setActiveIndex(null);
             } else {
@@ -73,12 +74,12 @@ const SuggestionBox: React.FC = () => {
             caretSpan.textContent = "|";
             hiddenDiv.appendChild(caretSpan);
 
-            const caretRect = caretSpan.getBoundingClientRect();
-            const textareaRect = textarea.getBoundingClientRect();
+            // const caretRect = caretSpan.getBoundingClientRect();
+            // const textareaRect = textarea.getBoundingClientRect();
 
             setPosition({
-                top: caretRect.width - hiddenDiv.scrollTop + textarea.scrollTop + 5,
-                left: caretRect.left - hiddenDiv.scrollLeft + textareaRect.left + 5,
+                top: hiddenDiv.scrollTop + textarea.scrollTop + 50,
+                left: hiddenDiv.scrollWidth - 350,
             });
 
             document.body.removeChild(hiddenDiv);
@@ -117,7 +118,6 @@ const SuggestionBox: React.FC = () => {
 
     const handleSuggestionClick = (suggestion: string) => {
         const words = inputValue.split(/\s+/);
-        words.pop(); // Remove the last word
         const newValue = [...words, suggestion].join(" ");
         setInputValue(newValue + " ");
         setSuggestions([]);
@@ -127,7 +127,7 @@ const SuggestionBox: React.FC = () => {
     const handleFetchSuggestionsManually = async () => {
         const lastWord = inputValue.split(/\s+/).pop(); // Get the last word
         if (lastWord) {
-            const fetchedSuggestions = await fetchSuggestions(lastWord);
+            const fetchedSuggestions = await fetchSuggestions(username, lastWord);
             setSuggestions(fetchedSuggestions);
             setActiveIndex(null); // Reset active index
         }
@@ -139,10 +139,11 @@ const SuggestionBox: React.FC = () => {
 
     const clearTextArea = async () => {
         const words = inputValue.split(/\s+/).filter((word) => word);
-        if (words.length > 0) {
-            await sendWordsToLearn({ username, words });
-        }
+        localStorage.setItem(username, "");
         setInputValue("");
+        if (words.length > 0) {
+            await sendWordsToLearn(username, words);
+        }
     };
 
     const handleLogout = async () => {
@@ -152,8 +153,8 @@ const SuggestionBox: React.FC = () => {
                 localStorage.setItem(username, inputValue);
             }
             await logout();
-            setUsername("");
-            window.location.href = "/";
+            localStorage.setItem("username", "");
+            window.location.href = "/group10/index.html";
         } catch (error) {
             console.error("Logout failed:", error);
         }
@@ -176,9 +177,8 @@ const SuggestionBox: React.FC = () => {
                 </button>
                 <button
                     onClick={toggleAutoSuggest}
-                    className={`mx-1 px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none ${
-                        autoSuggest ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-500 text-white hover:bg-gray-600"
-                    }`}
+                    className={`mx-1 px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none ${autoSuggest ? "bg-green-500 text-white hover:bg-green-600" : "bg-gray-500 text-white hover:bg-gray-600"
+                        }`}
                 >
                     {autoSuggest ? "Auto Suggest On" : "Auto Suggest Off"}
                 </button>
@@ -220,9 +220,8 @@ const SuggestionBox: React.FC = () => {
                     {suggestions.map((suggestion, index) => (
                         <li
                             key={index}
-                            className={`px-4 py-2 cursor-pointer ${
-                                activeIndex === index ? "bg-blue-100" : "hover:bg-blue-50"
-                            }`}
+                            className={`px-4 py-2 cursor-pointer ${activeIndex === index ? "bg-blue-100" : "hover:bg-blue-50"
+                                }`}
                             onClick={() => handleSuggestionClick(suggestion)}
                         >
                             {suggestion}
