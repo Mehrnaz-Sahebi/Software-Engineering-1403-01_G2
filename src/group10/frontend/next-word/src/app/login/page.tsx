@@ -23,6 +23,7 @@ const LoginPage: React.FC = () => {
         });
 
         if (response.ok) {
+            setUsername(username);
             window.location.href = "/group10/next-word.html";
         } else {
             console.log("Failed to login.");
