@@ -9,7 +9,7 @@ export enum MessageType {
 
 export const toastifyMessage = (message: string, messageType: MessageType) => {
     new toast({
-        position: "top-center",
+        position: "top-right",
         toastMsg: message,
         autoCloseTime: 3000,
         canClose: true,
