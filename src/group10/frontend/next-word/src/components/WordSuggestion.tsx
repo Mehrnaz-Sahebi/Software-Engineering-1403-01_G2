@@ -1,8 +1,11 @@
 'use client';
 
-import React, {useState, useRef} from "react";
-import {fetchSuggestions} from "@/app/api/suggest";
+import React, { useState, useRef, useEffect } from "react";
+import { fetchSuggestions } from "@/app/api/suggest";
 import TouchKeyboard from "@/components/TouchKeyboard";
+import { sendWordsToLearn } from "@/app/api/learn";
+import { logout } from "@/app/api/logout";
+import { useUser } from "@/app/UserContext";
 
 const SuggestionBox: React.FC = () => {
     const [inputValue, setInputValue] = useState("");
@@ -12,6 +15,17 @@ const SuggestionBox: React.FC = () => {
     const [autoSuggest, setAutoSuggest] = useState<boolean>(false);
     const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+    const { username, setUsername } = useUser();
+
+    // Load saved content when the component mounts and username is available
+    useEffect(() => {
+        if (username) {
+            const savedContent = localStorage.getItem(username);
+            if (savedContent) {
+                setInputValue(savedContent);
+            }
+        }
+    }, [username]);
 
     const handleInputChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -33,7 +47,7 @@ const SuggestionBox: React.FC = () => {
     const handleKeyUp = () => {
         if (textAreaRef.current) {
             const textarea = textAreaRef.current;
-            const {selectionStart} = textarea;
+            const { selectionStart } = textarea;
 
             // Create a hidden mirror div to calculate cursor position
             const hiddenDiv = document.createElement("div");
@@ -123,9 +137,37 @@ const SuggestionBox: React.FC = () => {
         setAutoSuggest((prev) => !prev);
     };
 
+    const clearTextArea = async () => {
+        const words = inputValue.split(/\s+/).filter((word) => word);
+        if (words.length > 0) {
+            await sendWordsToLearn({ username, words });
+        }
+        setInputValue("");
+    };
+
+    const handleLogout = async () => {
+        try {
+            // Save content in localStorage before logout
+            if (username) {
+                localStorage.setItem(username, inputValue);
+            }
+            await logout();
+            setUsername("");
+            window.location.href = "/";
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
     return (
         <div className="relative">
             <div className="flex justify-end">
+                <button
+                    onClick={handleLogout}
+                    className="mx-1 bg-red-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-red-600 focus:outline-none mr-auto"
+                >
+                    Logout
+                </button>
                 <button
                     onClick={handleFetchSuggestionsManually}
                     className="mx-1 bg-blue-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-blue-600 focus:outline-none"
@@ -148,6 +190,12 @@ const SuggestionBox: React.FC = () => {
                         ⌨️
                     </span>
                 </button>
+                <button
+                    onClick={clearTextArea}
+                    className="mx-1 bg-red-500 text-white px-4 py-2 rounded-md mb-2 hover:bg-red-600 focus:outline-none"
+                >
+                    Clear Text Area
+                </button>
             </div>
             <textarea
                 ref={textAreaRef}
@@ -156,7 +204,8 @@ const SuggestionBox: React.FC = () => {
                 onKeyUp={handleKeyUp}
                 onKeyDown={handleKeyDown}
                 className="w-full h-40 border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Type something..."
+                placeholder="متن خود را وارد نمایید..."
+                dir="rtl"
             ></textarea>
             {suggestions.length > 0 && position && (
                 <ul
@@ -181,7 +230,7 @@ const SuggestionBox: React.FC = () => {
                     ))}
                 </ul>
             )}
-            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard}/>}
+            {showKeyboard && <TouchKeyboard onKeyPress={handleKeyPress} onClose={toggleKeyboard} />}
         </div>
     );
 };

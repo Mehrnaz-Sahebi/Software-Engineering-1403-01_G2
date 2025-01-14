@@ -5,7 +5,7 @@ export async function fetchSuggestions(lastWord: string): Promise<string[]> {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ past_word: lastWord }),
+            body: JSON.stringify({ last_word: lastWord }),
         });
 
         if (!response.ok) {
