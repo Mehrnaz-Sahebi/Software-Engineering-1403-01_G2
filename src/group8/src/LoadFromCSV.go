@@ -41,9 +41,13 @@ func loadDataFromCSV(filePath string, trie *Trie) error {
 		if len(matches) == 0 {
 			// Fallback logic if no matches
 			meaningsRaw := strings.Split(record[1], "&")
-			meanings = strings.Split(meaningsRaw[0], ",")
+			for _, meaning := range strings.Split(meaningsRaw[0], "،") {
+				meanings = append(meanings, meaning)
+			}
 			if len(meaningsRaw) > 1 {
-				antonyms = strings.Split(meaningsRaw[1], ",")
+				for _, antonym := range strings.Split(meaningsRaw[1], "،") {
+					antonyms = append(antonyms, antonym)
+				}
 			}
 		} else {
 			for _, match := range matches {
@@ -56,7 +60,7 @@ func loadDataFromCSV(filePath string, trie *Trie) error {
 						antonyms = append(antonyms, antonym)
 					}
 				}
-				
+
 			}
 		}
 
@@ -73,55 +77,55 @@ func loadDataFromCSV(filePath string, trie *Trie) error {
 func loadDataFromCSV1(filePath string, trie *Trie) error {
 	file, err := os.Open(filePath)
 	if err != nil {
-	  return err
+		return err
 	}
 	defer file.Close()
-  
+
 	reader := csv.NewReader(file)
 	_, err = reader.Read() // Skip the header row
 	if err != nil {
-	  return err
-	}
-  
-	for {
-	  record, err := reader.Read()
-	  if err == io.EOF {
-		break
-	  }
-	  if err != nil {
 		return err
-	  }
-  
-	  if len(record) < 3 {
-		continue
-	  }
-  
-	  word := strings.TrimSpace(record[1])
-	  detail := strings.TrimSpace(record[2])
-  
-	  // Split detail into individual meanings
-	  meanings := []string{}
-	  for _, part := range strings.Split(detail, ".") { // Split by period
-		parts := strings.Split(part, "،") // Split by comma
-		for _, meaning := range parts {
-		  meaning = strings.TrimSpace(meaning)
-		  if meaning != "" {
-			meanings = append(meanings, meaning)
-		  }
-		}
-	  }
-  
-	  // Prepare the metadata
-	  metadata := map[string][]string{
-		"meanings": meanings,
-	  }
-  
-	  // Insert into trie
-	  trie.Insert(word, metadata)
 	}
-  
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if len(record) < 3 {
+			continue
+		}
+
+		word := strings.TrimSpace(record[1])
+		detail := strings.TrimSpace(record[2])
+
+		// Split detail into individual meanings
+		meanings := []string{}
+		for _, part := range strings.Split(detail, ".") { // Split by period
+			parts := strings.Split(part, "،") // Split by comma
+			for _, meaning := range parts {
+				meaning = strings.TrimSpace(meaning)
+				if meaning != "" {
+					meanings = append(meanings, meaning)
+				}
+			}
+		}
+
+		// Prepare the metadata
+		metadata := map[string][]string{
+			"meanings": meanings,
+		}
+
+		// Insert into trie
+		trie.Insert(word, metadata)
+	}
+
 	return nil
-  }
+}
 
 func loadData() {
 	if _, err := os.Stat("trie_data.json"); err == nil {
