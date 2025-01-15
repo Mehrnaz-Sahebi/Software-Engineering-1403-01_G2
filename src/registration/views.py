@@ -51,7 +51,7 @@ def LoginPage(request):
         print(pass1)
         if user is not None:
             login(request,user)
-            return redirect("http://localhost:8000/group8/home")
+            return redirect('home')
         else:
             return HttpResponse ("Username or Password is incorrect!!!")
 
