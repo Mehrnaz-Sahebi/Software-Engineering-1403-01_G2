@@ -34,7 +34,7 @@ const DropdownMenu = ({ items, children }: Props) => {
             exit="exit"
             variants={menuVariants}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-white dark:bg-darkGrayGlass rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+            className="absolute -right-40 md:right-0 z-10 mt-2 w-48 origin-top-right bg-white dark:bg-darkGrayGlass rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
           >
             <div className="py-1">
               {items.map((item, index) => (

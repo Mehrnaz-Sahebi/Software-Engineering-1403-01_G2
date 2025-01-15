@@ -22,7 +22,7 @@ function App() {
   }, [i18n]);
 
   return (
-    <div className="dark:bg-darkGray min-h-screen transition-all">
+    <div className="dark:bg-darkGray min-h-screen transition-all select-none">
       <Outlet />
     </div>
   );

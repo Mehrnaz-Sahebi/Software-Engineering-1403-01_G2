@@ -4,6 +4,9 @@ import { createBrowserRouter } from "react-router-dom";
 import HeaderLayout from "./components/Header/HeaderLayout";
 import App from "./App";
 import SynonymChecker from "./components/SynonymChecker/SynonymChecker";
+import NotFound from "./components/NotFound/NotFound";
+import Aboutus from "./components/Aboutus/Aboutus";
+import Login from "./components/Login/Login";
 
 const router = createBrowserRouter([
   {
@@ -15,12 +18,33 @@ const router = createBrowserRouter([
         element: <HeaderLayout></HeaderLayout>,
         children: [
           {
-            path: "/synonymChecker",
+            path: "/",
             element: (
               <Suspense fallback={<Fallback />}>
-                <SynonymChecker></SynonymChecker>
+                <SynonymChecker />
               </Suspense>
             ),
+          },
+          {
+            path: "/about",
+            element: (
+              <Suspense fallback={<Fallback />}>
+                <Aboutus />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/login",
+            element: (
+              <Suspense fallback={<Fallback />}>
+                <Login />
+              </Suspense>
+            ),
+          },
+
+          {
+            path: "*",
+            element: <NotFound />,
           },
         ],
       },

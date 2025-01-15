@@ -7,6 +7,11 @@ import zh from "./locales/zh";
 import ar from "./locales/ar";
 import fr from "./locales/fr";
 import es from "./locales/es";
+import ko from "./locales/ko";
+import de from "./locales/de";
+import hi from "./locales/hi";
+import ru from "./locales/ru";
+import it from "./locales/it";
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -27,6 +32,21 @@ i18n.use(initReactI18next).init({
     },
     zh: {
       translation: zh,
+    },
+    ko: {
+      translation: ko,
+    },
+    it: {
+      translation: it,
+    },
+    de: {
+      translation: de,
+    },
+    hi: {
+      translation: hi,
+    },
+    ru: {
+      translation: ru,
     },
   },
   lng: "fa",

@@ -13,6 +13,7 @@ export default {
         tealSecondary: "#305252", 
         lightGray: "#E7ECEF",
         littleLightGray: "#18191f",
+        tooltip: "#484a5c",
         darkGray: "#272932", 
         darkGrayGlass: "#16171cb0", 
         tan: "#D8A47F",
