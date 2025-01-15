@@ -48,7 +48,7 @@ flowchart LR
     D -->|Publish processed text to meanings_queue| C
     C -->|Consume meanings_queue| B
     B -->|HTTP Response with synonyms| A
-```
+
 
 - **Django Server**: Exposes RESTful endpoints, interacts with the database for storing text/user relations, and publishes/consumes messages to/from RabbitMQ.
 - **RabbitMQ**: Maintains two queues (`text_queue`, `meanings_queue`) to facilitate communication between Django & Go.
