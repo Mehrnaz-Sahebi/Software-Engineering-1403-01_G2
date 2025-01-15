@@ -99,34 +99,3 @@ func DeserializeTrie(data []byte) (*Trie, error) {
 	return &Trie{Root: rootNode}, nil
 }
 
-//func addWordHandler(c *gin.Context) {
-//	var req WordRequest
-//	if err := c.ShouldBindJSON(&req); err != nil {
-//		c.JSON(400, gin.H{"error": "Invalid request payload"})
-//		return
-//	}
-//
-//	word := req.Word
-//	meanings := req.Meanings
-//	antonyms := req.Antonyms
-//
-//	metadata := map[string][]string{
-//		"meanings": meanings,
-//		"antonyms": antonyms,
-//	}
-//
-//	globalTrie.Insert(word, metadata)
-//
-//	data, serErr := globalTrie.Serialize()
-//	if serErr != nil {
-//		c.JSON(500, gin.H{"error": "Failed to serialize Trie"})
-//		return
-//	}
-//
-//	if writeErr := os.WriteFile("trie_data.json", data, 0644); writeErr != nil {
-//		c.JSON(500, gin.H{"error": "Failed to write Trie data to JSON"})
-//		return
-//	}
-//
-//	c.JSON(200, gin.H{"message": fmt.Sprintf("Word '%s' added successfully", word)})
-//}

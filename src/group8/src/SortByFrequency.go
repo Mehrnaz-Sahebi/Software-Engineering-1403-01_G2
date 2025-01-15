@@ -40,7 +40,7 @@ func LoadMapFromJSON(filePath string) (map[string]int, error) {
 	return frequencies, err
 }
 
-// LoadFrequencies parses the file and returns a map of word frequencies
+
 func LoadFrequencies(filePath string) (map[string]int, error) {
 	frequencies := make(map[string]int)
 	file, err := os.Open(filePath)
@@ -88,7 +88,7 @@ func SortStringMap(words map[string][]string, frequenciess map[string]int) map[s
 		if !existsJ {
 			freqJ = 1
 		}
-		return freqI > freqJ // Sort in descending order
+		return freqI > freqJ
 	})
 	sortedWords := make(map[string][]string)
 	for _, key := range keys {
@@ -97,7 +97,7 @@ func SortStringMap(words map[string][]string, frequenciess map[string]int) map[s
 	return sortedWords
 }
 
-// SortStrings sorts strings by their frequency in ascending order
+
 func SortStrings(stringsToSort []string, frequenciess map[string]int) []string {
 	if len(frequenciess) != 0 {
 		frequencies = frequenciess
@@ -127,24 +127,19 @@ func modifyMaps() {
 			return
 		}
 
-		// Save the map as a JSON file for future use
-		//fmt.Printf("Saving frequencies to JSON: %v\n", frequencies)
 		err = SaveMapToJSON(frequencies, jsonFilePath)
 		if err != nil {
 			fmt.Printf("Error saving frequencies to JSON: %v\n", err)
 			return
 		}
-		//fmt.Println("Frequencies saved to JSON.")
+
 	} else {
-		// JSON file exists, load the map from it
-		//fmt.Println("Loading frequencies from JSON file...")
 		var err error
 		frequencies, err = LoadMapFromJSON(jsonFilePath)
-		//fmt.Print(frequencies)
+
 		if err != nil {
 			fmt.Printf("Error loading frequencies from JSON: %v\n", err)
 			return
 		}
-		//fmt.Printf("Loaded frequencies from JSON: %v\n", frequencies)
 	}
 }

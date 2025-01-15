@@ -8,13 +8,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// Job holds both the text and the correlation ID.
 type Job struct {
 	Text          string
 	CorrelationID string
 }
 
-// Replace these with your chosen buffer sizes.
+
 var jobQueueWithID = make(chan Job, 100)
 var resultQueueWithID = make(chan []map[string]interface{}, 100)
 
@@ -24,7 +23,6 @@ func search(word string) (map[string][]string, bool) {
 		meanings = SortStringMap(meanings, nil)
 		return meanings, true
 	}
-	//str, translated := finglishTranslator(word)
 	translated := false
 	str := word
 	if translated == false {
@@ -37,16 +35,10 @@ func search(word string) (map[string][]string, bool) {
 }
 
 func processText(text string) []TokenMeaning {
-	// Tokenize the text
 	tokens := Tokenize(text)
-	//fmt.Print(text)
-	// Filter out Persian prepositions
 	tokens = FilterUnnecessary(tokens)
-	//fmt.Printf("Tokens: %s", tokens[0].Word)
-	// Prepare the result
 	var tokenMeanings []TokenMeaning
 	for _, token := range tokens {
-		// Use the token.Word field for Trie search
 		if meanings, found := search(token.Word); found {
 			tokenMeanings = append(tokenMeanings, TokenMeaning{
 				Token:   token.Word,
@@ -85,7 +77,7 @@ func runServer(conn *amqp.Connection) {
 
 	go adjustWorkers()
 
-	// Listen for processed results, publish them with correlation_id
+
 	go func() {
 		for results := range resultQueueWithID {
 			body, err := json.Marshal(results)
@@ -136,8 +128,6 @@ func runServer(conn *amqp.Connection) {
 	close(jobQueueWithID)
 }
 
-// workerWithID consumes from jobQueueWithID, processes the text,
-// and sends back JSON that includes the same correlation_id.
 func workerWithID(id int) {
 	for job := range jobQueueWithID {
 		tokenMeanings := processText(job.Text)
