@@ -24,8 +24,10 @@ func search(word string) (map[string][]string, bool) {
 		meanings = SortStringMap(meanings, nil)
 		return meanings, true
 	}
-	str, tranlated := finglishTranslator(word)
-	if tranlated == false {
+	//str, translated := finglishTranslator(word)
+	translated := false
+	str := word
+	if translated == false {
 		return nil, false
 	}
 	return map[string][]string{
