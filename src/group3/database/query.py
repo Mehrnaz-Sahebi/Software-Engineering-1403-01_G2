@@ -198,7 +198,7 @@ def search_posts_tag_for_all(db_connection, query):
     cursor.close()
     return posts_list
 
-#group 3 data base
+# group 3 database
 def save_suggestion(connection, start, end, suggestion):
     with connection.cursor() as cursor:
         insert_query = """
@@ -207,9 +207,9 @@ def save_suggestion(connection, start, end, suggestion):
         """
         try:
             cursor.execute(insert_query, [start, end, suggestion])
-            mydb.commit()
+            connection.commit()
             print('inserted succesfuly')
-        except mysql.Error as err:
+        except mysql.connector.Error as err:
             print("Failed to insert user:", err)
         finally:
-            my_cursor.close()
+            print('helo')
