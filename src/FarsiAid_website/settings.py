@@ -34,6 +34,7 @@ SECRET_KEY = 'django-insecure-7y^3u&$yspikj)+u)u#vp5#=f=a@w9q1$qjkjas9=#cbf4_%k8
 DEBUG = True
 
 ALLOWED_HOSTS = []
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -57,20 +58,23 @@ INSTALLED_APPS = [
     'group10',
     'registration',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'FarsiAid_website.urls'
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -94,19 +98,19 @@ WSGI_APPLICATION = 'FarsiAid_website.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {  
+DATABASES = {
     'default': {  # دیتابیس اصلی
-        'ENGINE': 'django.db.backends.sqlite3',  
-        'NAME': BASE_DIR / 'db.sqlite3',  
-    },  
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    },
     'mysql': {  # دیتابیس دوم
-        'ENGINE': 'django.db.backends.mysql',  
-        'NAME': DB_NAME,  
-        'USER': DB_USER,  
-        'PASSWORD': DB_PASSWORD,  
-        'HOST': DB_HOST,  
-        'PORT': DB_PORT,  
-    }  
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
+    }
 }
 
 

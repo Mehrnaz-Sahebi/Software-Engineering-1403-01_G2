@@ -1,0 +1,124 @@
+.suggestion-box {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    background-color: white;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    text-align: right;
+    white-space: normal; 
+    word-wrap: break-word;
+    overflow-wrap: break-word; 
+    max-width: 100%;
+    box-sizing: border-box;
+    direction: rtl;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.7);
+}
+body.dark-mode .suggestion-box {
+    color: white !important;
+    background-color: #3a3a3a;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #555;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.7);
+    transition: background-color 0.3s, border 0.3s;
+}
+body.dark-mode .suggestion-box:hover {
+    background: #4a4a4a;
+
+}
+body.dark-mode .button-group{
+    margin-bottom: 10px;
+}
+
+body.dark-mode .text-content {
+    color: white !important;
+    padding: 7px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+
+body.dark-mode .text-content:hover {
+    background-color: #4caf50 !important;
+    color: white !important;
+}
+
+body.dark-mode .trash-icon {
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+body.dark-mode .icon-button:hover {
+    background: rgb(98, 96, 96) !important;
+    color: white !important;
+}
+body.dark-mode .icon-button{
+    color: white !important;
+    fill: white !important;  
+    stroke: white !important;
+}
+
+body.dark-mode .trash-icon:hover {
+    color: red;
+}
+.highlight-error {
+    text-decoration: line-through;
+    color: red;
+}
+
+.text-content{
+    padding: 7px;
+    align-items: center;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    direction: rtl;
+    unicode-bidi: plaintext;
+}
+.text-content:hover {
+    background-color: #e8f5e9;
+}
+
+.suggestion-text {
+    font-size: 16px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: right;
+    gap: 8px;
+}
+body.dark-mode .button-group{
+    color: white !important;
+    fill: white !important;
+}
+.icon-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    transition: background-color 0.2s ease;
+}
+.icon-button:hover{
+    background-color: rgb(175, 182, 189);
+}
+
+.expanded-content {
+    margin-top: 10px;
+    border-top: 1px solid #ccc;
+    max-height: 0;     
+    overflow: hidden;            
+    opacity: 0;           
+    transition: max-height 0.3s ease-out, opacity 0.5s ease-out, padding 0.3s ease-out;
+    padding: 0;  
+}
+.suggestion-box.expanded .expanded-content {
+    opacity: 1;   
+    padding: 10px;     
+}
+

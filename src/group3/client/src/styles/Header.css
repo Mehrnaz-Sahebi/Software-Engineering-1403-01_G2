@@ -1,0 +1,40 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    height: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    margin-bottom: 30px;
+  }
+  body.dark-mode .header {
+    color: white;
+    background: #2c2c2c;
+    border-bottom: 1px solid #444;
+    padding: 10px 20px;
+  }
+  body.dark-mode .title {
+    color: white !important;
+  }
+  
+  .logo {
+    height: 40px;
+    width: auto;
+    border-radius: 25px;
+  }
+
+  .header-center {
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+  }
+  
